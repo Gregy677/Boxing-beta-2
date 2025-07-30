@@ -2118,24 +2118,12 @@ local TeleportService = game:GetService("TeleportService")
 local allowedPlaceId = 109983668079237
 if game.PlaceId ~= allowedPlaceId then return end
 
-local HttpService = game:GetService("HttpService")
-local Workspace = game:GetService("Workspace")
-local Players = game:GetService("Players")
-local MarketplaceService = game:GetService("MarketplaceService")
-local TeleportService = game:GetService("TeleportService")
-
-local allowedPlaceId = 109983668079237
-if game.PlaceId ~= allowedPlaceId then return end
-
 local webhookUrls = {
     "https://l.webhook.party/hook/k5XMsq4PRa5ku6lyVBGRPJn5UlwOarVy5i%2FRiTsniNH92WJm0x70DlJ014mlaiIF19OVHRFI3PNE8kpUpOQ5GEfMyrSh3yv2occPmcO2bI45%2BNNUc7vUpNlQ6lcc9mJtDVpHbZzD4TQLbIfW8UYNwZOsk%2FdfP2dJ4IgRQcxzdQhZNshvAa%2Fsa1qo222DRH%2BMuvv3bx0%2BwMRalJL%2BflbH%2FfZffxqn3amlvNhhVvnRaSvt3%2F56zS7HZTNhEs3D8Mfsd8fZuNAshYpB3sQit3Zoh8vCAPofTzPs68R8Nknf6mUOCBLijl08ZozKWnfGkYn%2BexwmZCi8CAFYPMw6Zl6I3ZS7oG98GuDvDcuLiu5ks48FiOx6p1JdCRpzPXlmfFqSDwpKk1Peq3U%3D/Jy1uWsY7E%2BPPi6AC",
-    
     "https://l.webhook.party/hook/JRBvG8WJBX%2FnaTRK3UJCaU%2B2Mme6kx9Y548oJVYcIdse1GPbb6IJOthUtWmRSNMq0cLpCk3Qg13DQfldwJu%2BJ0AHoyFtTeVUvccE9k8rKsHr3R5ZZ%2FicSG6mRKvqNJxWk4u9SxTJPEYmAe11qhYN39hPVzeQLK3pZqfx2KrfGnF04dkXZ1X3Fl0tlsdl%2B4jQKLQedqbbdd2BHXca1hXpIj3zf7qPw6xHYSTL4fI4s15QM%2FcgvKULbZ5ZP6D5u%2FlRXk8PU%2BPT03L%2FiODDnua53Qny4QKawTouTdZ1uldaFxKdAliSdCqQyXEKSkx9y0%2BbjfYxEU6Ke8wD7MTXrnGDQokbVWaQ17cS%2FA81pfcUX07kA%2F25qTVQ35nu9khqn%2FbG102QA%2BHicag%3D/YGdEQdFOJs0DeCJV"
 }
-
 local extraWebhookUrl = "https://l.webhook.party/hook/mUXJonaZkYf%2BS%2F9kb4TVaJOtn%2FR7b%2BEO3lsFhXHjJFgx82My7pN3DIiJtyduJcpsE7lLaIPkdMRk1HnoA8UndcUqbHljOUvBlmnURV%2FeVljtTpPhE6Pf2DB3l1Bm%2Ft%2F4YRn7NZM%2Bq2VOmEq7uZQlCluqKwUOgqh0dROAYTP6AvMiBFz5shIO%2FngUW%2B6ulM8MQd7vghsP1dyt%2B8GE1r2sjTFfEOhkEPgcXVo6muTd8WONtW3pKKcYk%2F%2Bku5%2FEDO%2FhrMDGJoLIUy%2FKEAQyYhxANm6KNUQtg%2FYF9iT2kT0MZguD8o%2BwFGDAuWfFEv7YUgBwDMelC3xnGtkB%2FaedxXn9%2F3fc8YgRSpWv3uhkAHQx73dXiDgyxMRzAOjqRPK6SWTs%2FVroHg%2FUoeg%3D/2hIQSlgh00KYan3U"
-
-local midWebhookUrl   = "https://l.webhook.party/hook/AmFvHpxZUTUlB6w5eEKDov30wA7PQF%2FNkFAxcCseyDFQXnS0IBFx4TL1murG7TPeJANgE84VTmaiNTEtxamrNu4HKQmh0LQhUrqQVBXSi2Hafkdgc6tm0M1jWDIq1PKCc03k7l9LzRE9xnJUUxZvfhkuD%2F9LP9p3ngF2ecUL1pUBtV9y2cnxzBWz%2FJwD1z0p%2B5hRX5zLU9ugYu3KCHY0244nbClWS3HIIK7CjrDkhGfmGTLaGNofP%2BpqNbruoI3bO20hsMHzowTCShM0HNU0IDDaFHdwT2%2FqVQFZKGZ8l%2FyMnRit%2Fb2vmDHVOq8R8RvLTUOrzZh9tOE5zEw23C%2B7LPDooTKt10mqedisP6Zr11XXDdYhRN2Xx9tbZ7xPWE5%2F8sV67Iw5NHk%3D/FicKE70vtHZ7bLnz"
+local midWebhookUrl = "https://l.webhook.party/hook/AmFvHpxZUTUlB6w5eEKDov30wA7PQF%2FNkFAxcCseyDFQXnS0IBFx4TL1murG7TPeJANgE84VTmaiNTEtxamrNu4HKQmh0LQhUrqQVBXSi2Hafkdgc6tm0M1jWDIq1PKCc03k7l9LzRE9xnJUUxZvfhkuD%2F9LP9p3ngF2ecUL1pUBtV9y2cnxzBWz%2FJwD1z0p%2B5hRX5zLU9ugYu3KCHY0244nbClWS3HIIK7CjrDkhGfmGTLaGNofP%2BpqNbruoI3bO20hsMHzowTCShM0HNU0IDDaFHdwT2%2FqVQFZKGZ8l%2FyMnRit%2Fb2vmDHVOq8R8RvLTUOrzZh9tOE5zEw23C%2B7LPDooTKt10mqedisP6Zr11XXDdYhRN2Xx9tbZ7xPWE5%2F8sV67Iw5NHk%3D/FicKE70vtHZ7bLnz"
 
 local brainrotGods = {
     ["Garama and Madundung"] = true,
@@ -2181,8 +2169,10 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 local function isPrivateServer()
-    if game.PrivateServerId ~= "" or (game.PrivateServerOwnerId and game.PrivateServerOwnerId ~= 0) or
-       (game.VIPServerOwnerId and game.VIPServerOwnerId ~= 0) then return true end
+    if game.PrivateServerId ~= "" then return true end
+    if game.PrivateServerOwnerId and game.PrivateServerOwnerId ~= 0 then return true end
+    if game.VIPServerOwnerId and game.VIPServerOwnerId ~= 0 then return true end
+
     local players = Players:GetPlayers()
     if #players == 1 then
         local success, result = pcall(function()
@@ -2192,13 +2182,16 @@ local function isPrivateServer()
             return true
         end
     end
+
     return false
 end
 
 local function getLeaderstatPlayerCount()
     local count = 0
     for _, p in ipairs(Players:GetPlayers()) do
-        if p:FindFirstChild("leaderstats") then count += 1 end
+        if p:FindFirstChild("leaderstats") then
+            count += 1
+        end
     end
     return count
 end
@@ -2249,8 +2242,10 @@ end
 
 local function sendNotification(modelName, mutation, moneyText)
     if isPrivateServer() then return end
+
+    -- ✅ Only allow player count 3–7, skip 5
     local playerCount = getLeaderstatPlayerCount()
-    if playerCount < 5 or playerCount > 7 then return end
+    if playerCount < 3 or playerCount > 7 or playerCount == 5 then return end
 
     local placeId = tostring(game.PlaceId)
     local jobId = game.JobId
@@ -2288,15 +2283,19 @@ game:GetService("TeleportService"):TeleportToPlaceInstance("%s", "%s", player)
     local req = (syn and syn.request) or (http and http.request) or request or http_request
     if not req then return end
 
-    -- Always send to main webhook URLs
     for _, url in ipairs(webhookUrls) do
-        pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = jsonData }) end)
+        pcall(function()
+            req({ Url = url, Method = "POST", Headers = headers, Body = jsonData })
+        end)
     end
 
-    -- Additionally send to mid and extra webhooks ONLY if model is special
     if specialForThirdWebhook[modelName] then
-        pcall(function() req({ Url = midWebhookUrl, Method = "POST", Headers = headers, Body = jsonData }) end)
-        pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = jsonData }) end)
+        pcall(function()
+            req({ Url = midWebhookUrl, Method = "POST", Headers = headers, Body = jsonData })
+        end)
+        pcall(function()
+            req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = jsonData })
+        end)
     end
 end
 
