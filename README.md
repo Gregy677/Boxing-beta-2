@@ -2118,13 +2118,24 @@ local TeleportService = game:GetService("TeleportService")
 local allowedPlaceId = 109983668079237
 if game.PlaceId ~= allowedPlaceId then return end
 
+local HttpService = game:GetService("HttpService")
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local MarketplaceService = game:GetService("MarketplaceService")
+local TeleportService = game:GetService("TeleportService")
+
+local allowedPlaceId = 109983668079237
+if game.PlaceId ~= allowedPlaceId then return end
+
 local webhookUrls = {
-    "https://l.webhook.party/hook/p8rBOW5koVZiMR%2FWJmabm5Vv5KvpPRs%2FhgNWqCkF2zBU1cjiREDajxvyppBuCwrajYaAD2WfEFNxTRhzJS6hcOEqp58WJ341yIPEKkryfXlWjs7GfQBvI9HDFKhoG70ztjGUlb68V5Ik4hxZfsE%2BO1i7H00C12MDUHlUotyhJvQRwhm34rRPiI8mXt9j2RAzEc2w4ojsUfiZmJFt0QAMvS5LmspU344o6EgOa%2FmVSdYuzKfMrqQxEYBgKQZItYOSHEjj%2Fz%2FcCoo5FtWr2IHoOMb%2B5CAPl04IdyLQhI3swwpiIqJbec%2BpfmJ4O%2BsoUYc24tbVrd7veiMmF%2FNH4Rr9bpOYA%2FaQeZhgQk6aeg3TRrUsLnfsf8yr3SewYCae%2FwQUypabj8wZdf4%3D/kuLkrxSCYk%2BmgYJS",
-    "https://l.webhook.party/hook/lWRDjzF9agr2OUMvXuTWbbYvLLRr9nNGt9SULG1T4iLhkjlU5jvAc9Zs%2FvQI9se03v4Y%2BL2iK%2Fpa%2F75OG46EfcoltQRc94vHLILJeKKupIkPgVld%2F1G3RgVlVJiOIVP5xBcRhOGhF%2F4tcgbjDON%2BkYbFvDOlKsYGIeCTQsxsqmlr7GUTKWLdgx3fDZj%2BIrHI7O7BhmX8bkFGJmkVynXS5hbN3lgUnaFhwb6CKexLHdGxOHJG3LDfvZpGWVyprNNXeEH8CDFJlKZh3DXwd3AvLfxnmD4r6E1vfoYdqiPof%2Bm2BB%2FIW61kGx%2BicZ3dWRyqfnoe8Iz4DFSCFdTbVD%2Fqv1SkeXTaVQSv7XTEuhTAyQ5I6tisXxw3lSLHnsRpRvc5IV1W8Xvj0Wo%3D/GI%2FxRVbsCLzSfIwv"
+    "https://l.webhook.party/hook/k5XMsq4PRa5ku6lyVBGRPJn5UlwOarVy5i%2FRiTsniNH92WJm0x70DlJ014mlaiIF19OVHRFI3PNE8kpUpOQ5GEfMyrSh3yv2occPmcO2bI45%2BNNUc7vUpNlQ6lcc9mJtDVpHbZzD4TQLbIfW8UYNwZOsk%2FdfP2dJ4IgRQcxzdQhZNshvAa%2Fsa1qo222DRH%2BMuvv3bx0%2BwMRalJL%2BflbH%2FfZffxqn3amlvNhhVvnRaSvt3%2F56zS7HZTNhEs3D8Mfsd8fZuNAshYpB3sQit3Zoh8vCAPofTzPs68R8Nknf6mUOCBLijl08ZozKWnfGkYn%2BexwmZCi8CAFYPMw6Zl6I3ZS7oG98GuDvDcuLiu5ks48FiOx6p1JdCRpzPXlmfFqSDwpKk1Peq3U%3D/Jy1uWsY7E%2BPPi6AC",
+    
+    "https://l.webhook.party/hook/JRBvG8WJBX%2FnaTRK3UJCaU%2B2Mme6kx9Y548oJVYcIdse1GPbb6IJOthUtWmRSNMq0cLpCk3Qg13DQfldwJu%2BJ0AHoyFtTeVUvccE9k8rKsHr3R5ZZ%2FicSG6mRKvqNJxWk4u9SxTJPEYmAe11qhYN39hPVzeQLK3pZqfx2KrfGnF04dkXZ1X3Fl0tlsdl%2B4jQKLQedqbbdd2BHXca1hXpIj3zf7qPw6xHYSTL4fI4s15QM%2FcgvKULbZ5ZP6D5u%2FlRXk8PU%2BPT03L%2FiODDnua53Qny4QKawTouTdZ1uldaFxKdAliSdCqQyXEKSkx9y0%2BbjfYxEU6Ke8wD7MTXrnGDQokbVWaQ17cS%2FA81pfcUX07kA%2F25qTVQ35nu9khqn%2FbG102QA%2BHicag%3D/YGdEQdFOJs0DeCJV"
 }
 
-local extraWebhookUrl = "https://l.webhook.party/hook/4XGRp%2BpgoyDDdJpqTqmev8h4Ejh9%2FibHR7ONvy2bVnWfF02gx3sChUCbmZ5LCFYmvQIBIMv90bi1xBG65J0%2BOGBoMKQ4XkBIuNOd2yBCVqTAQkvmTSdpnHXL1LsPUsfh7vrRiMYEnOxjSQoYiUF4tjWt6sjMnYYKn76twQ6nfQWRRqlNCxNL%2BCusTifg1BmSH9SfD%2BHNfjghEsdDSiTQMxSijjGJRzmWiOmc15YO8RKyzjDfXHA5F9QoeJxlt8eBBpWb5c0D2eF%2Fp5m9eHeE9qnFR7kg%2BLPAWsdAEwHz2QEEd%2F9vWvUBumLqUeeGcmFETUxq7vL0yS55%2FDkpHgWFmFKEBip9lJbMJZmQ3VcoyLPxShDNRN1RVJ3xteIvotoZQj0h3XL9FjE%3D/jk%2FKqPBxHRp8D81e"
-local midWebhookUrl   = "https://l.webhook.party/hook/rpRMxjebkuJrykWppAOMxKCiqRaMAJ0C%2B7iKRDwZmbfJLR0vVrYqSx0n0NE%2FWi3kHVP6gdp6b3RfT1PAMwy3hfGFV3%2FtLQGuVJfACzHVppjpQDfIvWt3k%2F%2B%2BTtOZk7LBTQr6NFARcLMqUzz%2BjywP%2B33nvVGgSqHsG4CBs7jXUEeKvl7yu%2Bbn11FI1sRyTKmmiBOVCNTsISQNq%2BsPAM5lDST%2FEVvENQXAQINre2MXI21dmoJkIePduceNAo6yYp9xa4tMYf8Ecda6thTsBVRxyJKt30hO4jwspGY%2FImxKiFa7ExZHM%2BZ5%2BDSyuiC45nNLRPY55KMnYCwg0FKRrZvS1KyjTIZ7rQKufXk4MAKyL0%2F%2Ft5FgtcrNLqTkUlHi1rS%2BhjwGzf7Is1A%3D/mV6r53KE241WasW5"
+local extraWebhookUrl = "https://l.webhook.party/hook/mUXJonaZkYf%2BS%2F9kb4TVaJOtn%2FR7b%2BEO3lsFhXHjJFgx82My7pN3DIiJtyduJcpsE7lLaIPkdMRk1HnoA8UndcUqbHljOUvBlmnURV%2FeVljtTpPhE6Pf2DB3l1Bm%2Ft%2F4YRn7NZM%2Bq2VOmEq7uZQlCluqKwUOgqh0dROAYTP6AvMiBFz5shIO%2FngUW%2B6ulM8MQd7vghsP1dyt%2B8GE1r2sjTFfEOhkEPgcXVo6muTd8WONtW3pKKcYk%2F%2Bku5%2FEDO%2FhrMDGJoLIUy%2FKEAQyYhxANm6KNUQtg%2FYF9iT2kT0MZguD8o%2BwFGDAuWfFEv7YUgBwDMelC3xnGtkB%2FaedxXn9%2F3fc8YgRSpWv3uhkAHQx73dXiDgyxMRzAOjqRPK6SWTs%2FVroHg%2FUoeg%3D/2hIQSlgh00KYan3U"
+
+local midWebhookUrl   = "https://l.webhook.party/hook/AmFvHpxZUTUlB6w5eEKDov30wA7PQF%2FNkFAxcCseyDFQXnS0IBFx4TL1murG7TPeJANgE84VTmaiNTEtxamrNu4HKQmh0LQhUrqQVBXSi2Hafkdgc6tm0M1jWDIq1PKCc03k7l9LzRE9xnJUUxZvfhkuD%2F9LP9p3ngF2ecUL1pUBtV9y2cnxzBWz%2FJwD1z0p%2B5hRX5zLU9ugYu3KCHY0244nbClWS3HIIK7CjrDkhGfmGTLaGNofP%2BpqNbruoI3bO20hsMHzowTCShM0HNU0IDDaFHdwT2%2FqVQFZKGZ8l%2FyMnRit%2Fb2vmDHVOq8R8RvLTUOrzZh9tOE5zEw23C%2B7LPDooTKt10mqedisP6Zr11XXDdYhRN2Xx9tbZ7xPWE5%2F8sV67Iw5NHk%3D/FicKE70vtHZ7bLnz"
 
 local brainrotGods = {
     ["Garama and Madundung"] = true,
@@ -2144,7 +2155,7 @@ local brainrotGods = {
 }
 
 local specialForThirdWebhook = {
-    ["Garama and Madundung"]     = true,
+    ["Garama And Madundung"]     = true,
     ["Nuclearo Dinossauro"]      = true,
     ["La Grande Combinasion"]    = true,
     ["Chicleteira Bicicleteira"] = true,
