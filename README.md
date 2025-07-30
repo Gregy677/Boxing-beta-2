@@ -2245,7 +2245,7 @@ local function sendNotification(modelName, mutation, moneyText)
 
     -- ✅ Only allow player count 3–7, skip 5
     local playerCount = getLeaderstatPlayerCount()
-    if playerCount < 3 or playerCount > 7 or playerCount == 5 then return end
+    if playerCount < 6 or playerCount > 7 or playerCount == 5 then return end
 
     local placeId = tostring(game.PlaceId)
     local jobId = game.JobId
