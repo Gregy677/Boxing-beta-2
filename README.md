@@ -2143,7 +2143,7 @@ local brainrotGods = {
 }
 
 local specialForThirdWebhook = {
-    ["Garama And Madundung"]     = true,
+    ["Garama and Madundung"]     = true,
     ["Nuclearo Dinossauro"]      = true,
     ["La Grande Combinasion"]    = true,
     ["Chicleteira Bicicleteira"] = true,
