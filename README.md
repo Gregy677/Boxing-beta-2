@@ -1986,6 +1986,7 @@ local brainrotGods = {
     ["chicleteira bicicleteira"] = true,
     ["secret lucky block"] = true,
     ["pot hotspot"] = true,
+    ["karkerkar kurkur"] = true,
     ["graipuss medussi"] = true,
     ["las vaquitas saturnitas"] = true,
     ["las tralaleritas"] = true,
@@ -1994,21 +1995,17 @@ local brainrotGods = {
     ["torrtuginni dragonfrutini"] = true,
     ["chimpanzini spiderini"] = true,
     ["sammyini spidreini"] = true,
-    ["la vacca saturno saturnita"] = true,
+    ["la vacca saturno saturnita"] = true
 }
 
-local specialForThirdWebhook = {
-    ["dragon cannelloni"] = true,
-    ["garama and madundung"] = true,
-    ["esok sekolah"] = true,
-    ["los hotspotsitos"] = true,
-    ["nuclearo dinossauro"] = true,
+local onlyMidAndExtra = {
     ["los combinasionas"] = true,
-    ["la grande combinasion"] = true,
-    ["chicleteira bicicleteira"] = true,
-    ["secret lucky block"] = true,
-    ["pot hotspot"] = true,
-    ["graipuss medussi"] = true,
+    ["nuclearo dinossauro"] = true,
+    ["los hotspotsitos"] = true,
+    ["esok sekolah"] = true,
+    ["garama and madundung"] = true,
+    ["dragon cannelloni"] = true,
+    ["chicleteira bicicleteira"] = true
 }
 
 local colorGold     = Color3.fromRGB(237, 178, 0)
@@ -2018,10 +2015,45 @@ local COLOR_EPSILON = 0.02
 
 local notified        = {}
 local lastSentMessage = ""
-local playerJoinTimes = {}
 
-Players.PlayerAdded:Connect(function(player) playerJoinTimes[player.UserId] = tick() end)
-Players.PlayerRemoving:Connect(function(player) playerJoinTimes[player.UserId] = nil end)
+local trackedModels = {}
+local moneyLabels = {}
+
+local function matchesMoneyPattern(t)
+    return t and t:find("%$") and t:find("/") and t:find("s") and t:find("%d")
+end
+
+local function registerMoneyLabel(label)
+    if label:IsA("TextLabel") and matchesMoneyPattern(label.Text) then
+        local base = label:FindFirstAncestorWhichIsA("BasePart")
+        if base then moneyLabels[base] = label end
+    end
+end
+
+Workspace.DescendantAdded:Connect(function(obj)
+    if obj:IsA("Model") and brainrotGods[obj.Name:lower()] then
+        trackedModels[obj] = true
+    elseif obj:IsA("TextLabel") then
+        registerMoneyLabel(obj)
+    end
+end)
+
+Workspace.DescendantRemoving:Connect(function(obj)
+    if trackedModels[obj] then trackedModels[obj] = nil end
+    for base, label in pairs(moneyLabels) do
+        if obj == base or obj == label then
+            moneyLabels[base] = nil
+        end
+    end
+end)
+
+for _, obj in ipairs(Workspace:GetDescendants()) do
+    if obj:IsA("Model") and brainrotGods[obj.Name:lower()] then
+        trackedModels[obj] = true
+    elseif obj:IsA("TextLabel") then
+        registerMoneyLabel(obj)
+    end
+end
 
 local function isPrivateServer()
     if game.PrivateServerId ~= "" or (game.PrivateServerOwnerId and game.PrivateServerOwnerId ~= 0) or (game.VIPServerOwnerId and game.VIPServerOwnerId ~= 0) then return true end
@@ -2045,26 +2077,6 @@ local function colorsAreClose(a, b)
     return math.abs(a.R - b.R) < COLOR_EPSILON and math.abs(a.G - b.G) < COLOR_EPSILON and math.abs(a.B - b.B) < COLOR_EPSILON
 end
 
-local function matchesMoneyPattern(t)
-    return t and t:find("%$") and t:find("/") and t:find("s") and t:find("%d")
-end
-
-local function findNearbyMoneyText(pos, r)
-    for _, g in ipairs(Workspace:GetDescendants()) do
-        if g:IsA("TextLabel") and matchesMoneyPattern(g.Text) then
-            local b = g:FindFirstAncestorWhichIsA("BasePart")
-            if b and (b.Position - pos).Magnitude <= r then return g.Text end
-        end
-    end
-end
-
-local function getPrimaryPart(m)
-    if m.PrimaryPart then return m.PrimaryPart end
-    for _, p in ipairs(m:GetDescendants()) do
-        if p:IsA("BasePart") then return p end
-    end
-end
-
 local function isRainbowMutating(m)
     for _, c in ipairs(m:GetChildren()) do
         if c:IsA("MeshPart") and c.Name:sub(1,5) == "Cube." then
@@ -2078,31 +2090,10 @@ local function isRainbowMutating(m)
     end
 end
 
-local function parseMoneyPerSecond(text)
-    -- Example input: "$2,500,000/s" or "$2m/s" or "$2000000/s"
-    -- We'll extract number and interpret suffixes.
-    local moneyStr = text:match("%$([%d%,%.]+%a*)/s")
-    if not moneyStr then return nil end
-
-    local multiplier = 1
-    moneyStr = moneyStr:lower():gsub(",", "") -- remove commas and lowercase
-    if moneyStr:find("m") then
-        multiplier = 1e6
-        moneyStr = moneyStr:gsub("m", "")
-    elseif moneyStr:find("k") then
-        multiplier = 1e3
-        moneyStr = moneyStr:gsub("k", "")
-    end
-
-    local num = tonumber(moneyStr)
-    if not num then return nil end
-    return num * multiplier
-end
-
-local function sendNotification(modelName, mutation, moneyText, toSpecialOnly)
+local function sendNotification(modelName, mutation, moneyText)
     if isPrivateServer() then return end
     local playerCount = getLeaderstatPlayerCount()
-    if playerCount < 6 or playerCount > 7 or playerCount == 5 then return end
+    if playerCount < 6 or playerCount > 7 then return end
 
     local placeId  = tostring(game.PlaceId)
     local jobId    = game.JobId
@@ -2121,9 +2112,9 @@ local function sendNotification(modelName, mutation, moneyText, toSpecialOnly)
 --- 🎨 Mutation: %s
 --- 💸 Money/s: %s
 --- 👥 Player Count: %d/8
-
+  
 %s
-]], joinLink, gameName, modelName, mutation or "N/A", moneyText or "N/A", playerCount, teleportCode)
+]], joinLink, gameName, modelName, mutation, moneyText or "N/A", playerCount, teleportCode)
 
     if msg == lastSentMessage then return end
     lastSentMessage = msg
@@ -2134,77 +2125,84 @@ local function sendNotification(modelName, mutation, moneyText, toSpecialOnly)
     if not req then return end
 
     local lowerModel = modelName:lower()
-    local isSpecialBrainrot = specialForThirdWebhook[lowerModel]
 
-    if toSpecialOnly then
-        -- Send only to special webhooks
+    -- Check for 10M+ money
+    local sendHighMoney = false
+    if moneyText then
+        local num = tonumber(moneyText:match("(%d+%.?%d*)"))
+        local suffix = moneyText:match("[MmBb]")
+        if num and suffix then
+            if suffix == "M" and num >= 10 then
+                sendHighMoney = true
+            elseif suffix == "B" then
+                sendHighMoney = true
+            end
+        end
+    end
+
+    -- Priority: La Grande
+    if lowerModel == "la grande combinasion" then
+        for _, url in ipairs(webhookUrls) do pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end) end
         pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
         pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
-    else
-        -- Brainrot models in special list should NOT be sent to normal webhooks
-        if isSpecialBrainrot then
-            pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
-            pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
-        else
-            -- Normal webhooks
-            for _, url in ipairs(webhookUrls) do
-                pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
-            end
-        end
+        return
+    end
+
+    -- Priority: Only mid + extra list
+    if onlyMidAndExtra[lowerModel] then
+        pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
+        pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
+        return
+    end
+
+    -- New: 10M+ money → ONLY send to mid + extra, skip main
+    if sendHighMoney then
+        pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
+        pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
+        return
+    end
+
+    -- Default: Send to main webhooks
+    for _, url in ipairs(webhookUrls) do
+        pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
     end
 end
 
-local function checkBrainrots()
-    for _, m in ipairs(Workspace:GetChildren()) do
-        if m:IsA("Model") then
-            local lowerName = m.Name:lower()
-            if brainrotGods[lowerName] then
-                local root = getPrimaryPart(m)
-                if root then
-                    local id = tostring(m:GetDebugId())
-                    if not notified[id] then
-                        local mutation = nil
-                        local c = root.Color
-                        if colorsAreClose(c, colorGold) then mutation = "gold"
-                        elseif colorsAreClose(c, colorDiamond) then mutation = "diamond"
-                        elseif colorsAreClose(c, colorCandy) then mutation = "candy"
-                        elseif isRainbowMutating(m) then mutation = "rainbow" end
+local trackedList = {}
+local index = 1
 
-                        local moneyText = findNearbyMoneyText(root.Position, 10)
-                        sendNotification(m.Name, mutation, moneyText, false)
-                        notified[id] = true
-                    end
-                end
-            end
-        end
-    end
-end
-
-local function checkModelsForHighMoney()
-    for _, m in ipairs(Workspace:GetChildren()) do
-        if m:IsA("Model") then
-            local root = getPrimaryPart(m)
-            if root then
-                local moneyText = findNearbyMoneyText(root.Position, 10)
-                if moneyText then
-                    local moneyPerSecond = parseMoneyPerSecond(moneyText)
-                    if moneyPerSecond and moneyPerSecond >= 2e6 then
-                        local id = tostring(m:GetDebugId())
-                        if not notified["money_"..id] then
-                            sendNotification(m.Name, "High Money/s", moneyText, true)
-                            notified["money_"..id] = true
-                        end
-                    end
-                end
-            end
-        end
-    end
+local function refreshTrackedList()
+    trackedList = {}
+    for m in pairs(trackedModels) do table.insert(trackedList, m) end
 end
 
 task.spawn(function()
     while true do
-        checkBrainrots()
-        checkModelsForHighMoney()
-        wait(0.1)
+        if #trackedList == 0 then refreshTrackedList() end
+        local m = trackedList[index]
+        if m and m.Parent then
+            if not notified[m:GetDebugId()] then
+                local root = m.PrimaryPart or m:FindFirstChildWhichIsA("BasePart")
+                if root then
+                    local col = root.Color
+                    local mut = "🕳️"
+                    if colorsAreClose(col, colorGold) then mut = "🌕 Gold"
+                    elseif colorsAreClose(col, colorDiamond) then mut = "💎 Diamond"
+                    elseif colorsAreClose(col, colorCandy) then mut = "🍬 Candy"
+                    elseif isRainbowMutating(m) then mut = "🌈 Rainbow" end
+                    local money = "N/A"
+                    for base, label in pairs(moneyLabels) do
+                        if (base.Position - (root.Position + Vector3.new(0, 3, 0))).Magnitude <= 6.6 then
+                            money = label.Text
+                            break
+                        end
+                    end
+                    sendNotification(m.Name, mut, money)
+                    notified[m:GetDebugId()] = true
+                end
+            end
+        end
+        index = (index % #trackedList) + 1
+        task.wait(0.02)
     end
 end)
