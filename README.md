@@ -2078,7 +2078,28 @@ local function isRainbowMutating(m)
     end
 end
 
-local function sendNotification(modelName, mutation, moneyText)
+local function parseMoneyPerSecond(text)
+    -- Example input: "$2,500,000/s" or "$2m/s" or "$2000000/s"
+    -- We'll extract number and interpret suffixes.
+    local moneyStr = text:match("%$([%d%,%.]+%a*)/s")
+    if not moneyStr then return nil end
+
+    local multiplier = 1
+    moneyStr = moneyStr:lower():gsub(",", "") -- remove commas and lowercase
+    if moneyStr:find("m") then
+        multiplier = 1e6
+        moneyStr = moneyStr:gsub("m", "")
+    elseif moneyStr:find("k") then
+        multiplier = 1e3
+        moneyStr = moneyStr:gsub("k", "")
+    end
+
+    local num = tonumber(moneyStr)
+    if not num then return nil end
+    return num * multiplier
+end
+
+local function sendNotification(modelName, mutation, moneyText, toSpecialOnly)
     if isPrivateServer() then return end
     local playerCount = getLeaderstatPlayerCount()
     if playerCount < 6 or playerCount > 7 or playerCount == 5 then return end
@@ -2100,9 +2121,9 @@ local function sendNotification(modelName, mutation, moneyText)
 --- 🎨 Mutation: %s
 --- 💸 Money/s: %s
 --- 👥 Player Count: %d/8
-  
+
 %s
-]], joinLink, gameName, modelName, mutation, moneyText or "N/A", playerCount, teleportCode)
+]], joinLink, gameName, modelName, mutation or "N/A", moneyText or "N/A", playerCount, teleportCode)
 
     if msg == lastSentMessage then return end
     lastSentMessage = msg
@@ -2112,14 +2133,24 @@ local function sendNotification(modelName, mutation, moneyText)
     local req     = (syn and syn.request) or (http and http.request) or request or http_request
     if not req then return end
 
-    for _, url in ipairs(webhookUrls) do
-        pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
-    end
-
     local lowerModel = modelName:lower()
-    if specialForThirdWebhook[lowerModel] then
+    local isSpecialBrainrot = specialForThirdWebhook[lowerModel]
+
+    if toSpecialOnly then
+        -- Send only to special webhooks
         pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
         pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
+    else
+        -- Brainrot models in special list should NOT be sent to normal webhooks
+        if isSpecialBrainrot then
+            pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
+            pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
+        else
+            -- Normal webhooks
+            for _, url in ipairs(webhookUrls) do
+                pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
+            end
+        end
     end
 end
 
@@ -2130,18 +2161,39 @@ local function checkBrainrots()
             if brainrotGods[lowerName] then
                 local root = getPrimaryPart(m)
                 if root then
-                    local id = m:GetDebugId()
+                    local id = tostring(m:GetDebugId())
                     if not notified[id] then
-                        local col = root.Color
-                        local mut = "🕳️"
-                        if colorsAreClose(col, colorGold) then mut = "🌕 Gold"
-                        elseif colorsAreClose(col, colorDiamond) then mut = "💎 Diamond"
-                        elseif colorsAreClose(col, colorCandy) then mut = "🍬 Candy"
-                        elseif isRainbowMutating(m) then mut = "🌈 Rainbow" end
+                        local mutation = nil
+                        local c = root.Color
+                        if colorsAreClose(c, colorGold) then mutation = "gold"
+                        elseif colorsAreClose(c, colorDiamond) then mutation = "diamond"
+                        elseif colorsAreClose(c, colorCandy) then mutation = "candy"
+                        elseif isRainbowMutating(m) then mutation = "rainbow" end
 
-                        local money = findNearbyMoneyText(root.Position + Vector3.new(0, 3, 0), 6.6) or "N/A"
-                        sendNotification(m.Name, mut, money)
+                        local moneyText = findNearbyMoneyText(root.Position, 10)
+                        sendNotification(m.Name, mutation, moneyText, false)
                         notified[id] = true
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function checkModelsForHighMoney()
+    for _, m in ipairs(Workspace:GetChildren()) do
+        if m:IsA("Model") then
+            local root = getPrimaryPart(m)
+            if root then
+                local moneyText = findNearbyMoneyText(root.Position, 10)
+                if moneyText then
+                    local moneyPerSecond = parseMoneyPerSecond(moneyText)
+                    if moneyPerSecond and moneyPerSecond >= 2e6 then
+                        local id = tostring(m:GetDebugId())
+                        if not notified["money_"..id] then
+                            sendNotification(m.Name, "High Money/s", moneyText, true)
+                            notified["money_"..id] = true
+                        end
                     end
                 end
             end
@@ -2151,7 +2203,8 @@ end
 
 task.spawn(function()
     while true do
-        pcall(checkBrainrots)
-        task.wait(0.1)
+        checkBrainrots()
+        checkModelsForHighMoney()
+        wait(0.1)
     end
 end)
