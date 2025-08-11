@@ -719,6 +719,96 @@ MainTab:CreateButton({
     end
 })
 
+-- Wait until game is loaded
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Speed boost toggle state (start OFF)
+local speedBoostEnabled = false
+
+-- Movement parameters
+local targetSpeed = 45
+local baseLerpSpeed = 10
+local jitterAmount = 0.1
+local velocityThreshold = 0.5
+
+-- Ping estimation function
+local function getEstimatedPing()
+    local stats = player:FindFirstChild("Stats")
+    if stats and stats:FindFirstChild("Network") then
+        local network = stats.Network
+        local pingMs = network:GetAttribute("Ping") or 0
+        return pingMs / 1000
+    end
+    return 0.1
+end
+
+local function lerp(a, b, t)
+    return a + (b - a) * t
+end
+
+-- RunService loop controlling speed boost
+RunService.Heartbeat:Connect(function(dt)
+    if not speedBoostEnabled then return end
+
+    if not humanoidRootPart or not humanoid then return end
+    if humanoid.MoveDirection.Magnitude > 0 then
+        local currentVel = humanoidRootPart.Velocity
+        local moveDir = humanoid.MoveDirection.Unit
+
+        local desiredVelX = moveDir.X * targetSpeed
+        local desiredVelZ = moveDir.Z * targetSpeed
+
+        local ping = getEstimatedPing()
+        local lerpSpeed = baseLerpSpeed / math.max(ping, 0.05)
+
+        local diffX = math.abs(currentVel.X - desiredVelX)
+        local diffZ = math.abs(currentVel.Z - desiredVelZ)
+
+        local newVelX = currentVel.X
+        local newVelZ = currentVel.Z
+
+        if diffX > velocityThreshold then
+            newVelX = lerp(currentVel.X, desiredVelX, math.clamp(lerpSpeed * dt, 0, 1))
+        end
+        if diffZ > velocityThreshold then
+            newVelZ = lerp(currentVel.Z, desiredVelZ, math.clamp(lerpSpeed * dt, 0, 1))
+        end
+
+        newVelX = newVelX + (math.random() - 0.5) * jitterAmount
+        newVelZ = newVelZ + (math.random() - 0.5) * jitterAmount
+
+        humanoidRootPart.Velocity = Vector3.new(newVelX, currentVel.Y, newVelZ)
+    end
+end)
+
+-- Update references on respawn
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    humanoid = character:WaitForChild("Humanoid")
+end)
+
+-- ⚡️ Speed Boost toggle using Rayfield UI (place your tab in 'MainTab')
+MainTab:CreateToggle({
+    Name = "⚡️ Speed Boost",
+    CurrentValue = false,
+    Callback = function(state)
+        speedBoostEnabled = state
+        print("⚡️ Speed Boost is now " .. (state and "ON ✅" or "OFF ❌"))
+    end
+})
+
+
 -- Main heartbeat loop (runs each frame)
 RunService.Heartbeat:Connect(function()
 if not autoSwordEnabled then return end
