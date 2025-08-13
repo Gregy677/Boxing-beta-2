@@ -2003,6 +2003,8 @@ local brainrotGods = {
     ["chicleteira bicicleteira"] = true,
     ["secret lucky block"] = true,
     ["pot hotspot"] = true,
+    ["karkerkar kurkur"] = true,
+    ["los tungtungtungcitos"] = true,
     ["graipuss medussi"] = true,
     ["las vaquitas saturnitas"] = true,
     ["las tralaleritas"] = true,
@@ -2021,11 +2023,6 @@ local specialForThirdWebhook = {
     ["los hotspotsitos"] = true,
     ["nuclearo dinossauro"] = true,
     ["los combinasionas"] = true,
-    ["la grande combinasion"] = true,
-    ["chicleteira bicicleteira"] = true,
-    ["secret lucky block"] = true,
-    ["pot hotspot"] = true,
-    ["graipuss medussi"] = true,
 }
 
 local colorGold     = Color3.fromRGB(237, 178, 0)
@@ -2062,17 +2059,52 @@ local function colorsAreClose(a, b)
     return math.abs(a.R - b.R) < COLOR_EPSILON and math.abs(a.G - b.G) < COLOR_EPSILON and math.abs(a.B - b.B) < COLOR_EPSILON
 end
 
-local function matchesMoneyPattern(t)
-    return t and t:find("%$") and t:find("/") and t:find("s") and t:find("%d")
+-- === Improved Money Detection ===
+local moneyLabels = {}
+local MONEY_MAX_DISTANCE = 6.6
+
+local function matchesMoneyPattern(text)
+    return text
+        and text:find("%$")
+        and text:find("/")
+        and text:lower():find("s")
+        and text:match("%d")
 end
 
-local function findNearbyMoneyText(pos, r)
-    for _, g in ipairs(Workspace:GetDescendants()) do
-        if g:IsA("TextLabel") and matchesMoneyPattern(g.Text) then
-            local b = g:FindFirstAncestorWhichIsA("BasePart")
-            if b and (b.Position - pos).Magnitude <= r then return g.Text end
+local function registerMoneyLabel(label)
+    if label:IsA("TextLabel") and matchesMoneyPattern(label.Text) then
+        local base = label:FindFirstAncestorWhichIsA("BasePart")
+        if base then
+            moneyLabels[base] = label
         end
     end
+end
+
+Workspace.DescendantAdded:Connect(function(obj)
+    if obj:IsA("TextLabel") then
+        registerMoneyLabel(obj)
+    end
+end)
+
+for _, obj in ipairs(Workspace:GetDescendants()) do
+    if obj:IsA("TextLabel") then
+        registerMoneyLabel(obj)
+    end
+end
+
+local function getNearbyMoney(rootPart)
+    local closestDist = MONEY_MAX_DISTANCE
+    local closestMoney = nil
+    for base, label in pairs(moneyLabels) do
+        if base and base.Parent and label and label.Parent then
+            local dist = (base.Position - (rootPart.Position + Vector3.new(0, 3, 0))).Magnitude
+            if dist <= closestDist and matchesMoneyPattern(label.Text) then
+                closestDist = dist
+                closestMoney = label.Text
+            end
+        end
+    end
+    return closestMoney and ("💸 " .. closestMoney) or "💸 N/A"
 end
 
 local function getPrimaryPart(m)
@@ -2129,14 +2161,20 @@ local function sendNotification(modelName, mutation, moneyText)
     local req     = (syn and syn.request) or (http and http.request) or request or http_request
     if not req then return end
 
-    for _, url in ipairs(webhookUrls) do
-        pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
-    end
-
     local lowerModel = modelName:lower()
-    if specialForThirdWebhook[lowerModel] then
+    if lowerModel == "la grande combinasion" then
+        for _, url in ipairs(webhookUrls) do
+            pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
+        end
         pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
         pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
+    elseif specialForThirdWebhook[lowerModel] then
+        pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
+        pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
+    else
+        for _, url in ipairs(webhookUrls) do
+            pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
+        end
     end
 end
 
@@ -2156,7 +2194,7 @@ local function checkBrainrots()
                         elseif colorsAreClose(col, colorCandy) then mut = "🍬 Candy"
                         elseif isRainbowMutating(m) then mut = "🌈 Rainbow" end
 
-                        local money = findNearbyMoneyText(root.Position + Vector3.new(0, 3, 0), 6.6) or "N/A"
+                        local money = getNearbyMoney(root)
                         sendNotification(m.Name, mut, money)
                         notified[id] = true
                     end
@@ -2169,7 +2207,7 @@ end
 task.spawn(function()
     while true do
         pcall(checkBrainrots)
-        task.wait(0.1)
+        task.wait(0.03)
     end
 end)
 
