@@ -2023,6 +2023,8 @@ local specialForThirdWebhook = {
     ["los hotspotsitos"] = true,
     ["nuclearo dinossauro"] = true,
     ["los combinasionas"] = true,
+    ["pot hotspot"] = true,
+    ["graipuss medussi"] = true,
 }
 
 local colorGold     = Color3.fromRGB(237, 178, 0)
