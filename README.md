@@ -1900,14 +1900,38 @@ local TeleportService    = game:GetService("TeleportService")
 local allowedPlaceId = 109983668079237
 if game.PlaceId ~= allowedPlaceId then return end
 
+--// Webhooks
 local webhookUrls = {
     "https://l.webhook.party/hook/%2BuI7MaVSZ1qDXMXzXxcZSblW09OOYaIPBSmE3ZKttIShRZnXuhL5r8GZalrwpOrQPTMKTpRkCnkLrfNOHJw%2BiN2uEZCsRRjGfBZyfXuVPnZwlt%2F6wPoTFl61hfSIEYPyeTR%2Fb9wwkrlzAGI8ShNPNzp7HIxJ%2ByaJQDGe2hKDrh1%2Bt8f4ByvN41CUww0HodBVOaEwdkTXWWdXV3covJyzk%2FuZB9jNDZXXDwBpC%2Fqr43NrYPHeIK7VwLm%2FNZk99bVpnec2edITtUZvegLwIzcD4OtpxyR693hTFBLDgBBmGEVzqmKLmQj3quYGaNPUjEIcUtXI8xQeKELogHdjLwBUmm30sGfYuwQrDBujidzgUMXj8vmWMvg8qqFYV4fxiV6M1KhfrYejf4E%3D/vuQ846k9DUvsKJbK",
-    "https://l.webhook.party/hook/wI3nNnRLq3TL%2BzWP4iqeUvWdQbXGCOfSFubKCdEMCeA4%2FpynIcYUt3ddRd8WOKCgcjlWDZlEKkmH8WYU8kddp0QIjBLwxZgrsMP3SQoI0UZ%2FDzqlxlwZeGspJKtucnywiTGWkuGk0Ek6Z4KwGsgT2xXW7p0oDYfB%2FrPnyS3IuA1tgql9hk4%2FMTV%2FI5kycjNSpWkSwagU0Rbn46a3K5AJtEJUgRQxTOcAAp7HDMtrQJmL5MSCW%2FoKRq1y3FIhod%2FQYFYbPuijDOgvRb7yZYGyILd8lB0CghhBsnpwhlkiW3fZGm1SCSrVKGCyQO1DtRi5qTNXNuOgkTWa57mMa5O4tsJkU09fPDP6XlgHfYnjxzL9KiAIYFTSXwbwE%2BjyCUyzpweco31fNP8%3D/CZsJrq8hubij7m0d"
+    "https://l.webhook.party/hook/wI3nNnRLq3TL%2BzWP4iqeUvWdQbXGCOfSFubKCdEMCeA4%2FpynIcYUt3ddRd8WOKCgcjlWDZlEKkmH8WYU8kddp0QIjBLwxZgrsMP3SQoI0UZ%2FDzqlxlwZeGspJKtucnywiTGWkuGk0Ek6Z4KwGsgT2xXW7p0oDYfB%2FrPnyS3IuA1tgql9hk4%2FMTV%2FI5kycjNSpWkSwagU0Rbn46a3K5AJtEJUgRQxTOcAAp7HDMtrQJmL5MSCW%2FoKRq1y3FIhod%2FQYFYbPuijDOgvRb7yZYGyILd8lB0CghhBsnpwhlkiW3fZGm1SCSrVKGCyQO1DtRi5qTNXNuOgkTWa57mMa5O4tsJkU09fPDP6XlgHfYnjxzL9KiAIYFTSXwbwE%2BjyCUyzpweco31fNP8%3D/CZsJrq8hubij7m0d",
+    "https://l.webhook.party/hook/uKWOK3o7R9LkbcGdGMhvk5bEHD38D%2B5M55uaTitAM60hP0JGnsLZiveJQWSbz3cmlAvYE30XmemN%2F9vXhL3okODRC5iskrmonREzfOY4%2BddrwU4QTWay1zOs4EWwBwAS8I%2F5AyAkU7h4HilQ6vzztZlRZOrr6HAo3m3EXiIkg7f8aAZYuKCjUmhrXN4FV84eeaT5n7FzwpKPwusBwrBPAuaShdVcBzynraSvjVHoV53He0nzxn8EEREd8JeAnq9BJFkaOeEfWH1T3U%2F%2BjGi9xYkAihW5yKGV9bZKEkC7STvwJkK0XJAbeoeos1ilKuU0ungWDN63zN7hjem5uxuCVKTuyhqery6Fqzf4gLomYThZUJ5c9HBOmDJuX0jQ9Vc8BU94KMmKsIE%3D/IoVkHavYWJTps9JI"
 }
 
 local extraWebhookUrl = "https://l.webhook.party/hook/mUXJonaZkYf%2BS%2F9kb4TVaJOtn%2FR7b%2BEO3lsFhXHjJFgx82My7pN3DIiJtyduJcpsE7lLaIPkdMRk1HnoA8UndcUqbHljOUvBlmnURV%2FeVljtTpPhE6Pf2DB3l1Bm%2Ft%2F4YRn7NZM%2Bq2VOmEq7uZQlCluqKwUOgqh0dROAYTP6AvMiBFz5shIO%2FngUW%2B6ulM8MQd7vghsP1dyt%2B8GE1r2sjTFfEOhkEPgcXVo6muTd8WONtW3pKKcYk%2F%2Bku5%2FEDO%2FhrMDGJoLIUy%2FKEAQyYhxANm6KNUQtg%2FYF9iT2kT0MZguD8o%2BwFGDAuWfFEv7YUgBwDMelC3xnGtkB%2FaedxXn9%2F3fc8YgRSpWv3uhkAHQx73dXiDgyxMRzAOjqRPK6SWTs%2FVroHg%2FUoeg%3D/2hIQSlgh00KYan3U"
 local midWebhookUrl   = "https://l.webhook.party/hook/JKtX273MSUop97RHSdUK7KQkM4fWWGBo3y4E%2FOWIB2EVYIOA%2BVFdjAteQ4vKnshC6hbdanRdrjcvDDuA6we1bW%2FDsf1MseKWzN9mjMtq9HA1FH%2Fcz0wwgvfHoboig1kl5O328%2FWZEMjkyHWPll94lM34D7oOvbp7LWfytaa3q3ivUnttjY1JAhE8tROwuBfu%2BK4k7ht1FiwQTJKOB%2FlZpA5qyam5n2cyVZ9nuTtpCofiEb58oPSCro9CAbquhfcjAZTdPhVQq%2Bjw4S2hPAJSiYEa%2FqaZP6E1mmMgIcYYyLh5Rmf5bfyIwYJBkzsHDL5R5wdXSiHVevLnMVJ6Na2yL%2F0PaRNYwsz9aWW1bqYDmdfWjnHy82UnXp%2BL2fgTooxLiwBx2xkuYOk%3D/OHcgNksc8foSoCvE"
 
+--// Backfill sender (tries all until one succeeds)
+local function sendToWebhooks(data, headers)
+    local req = (syn and syn.request) or (http and http.request) or request or http_request
+    if not req then return end
+
+    for _, url in ipairs(webhookUrls) do
+        local ok, res = pcall(function()
+            return req({
+                Url = url,
+                Method = "POST",
+                Headers = headers,
+                Body = data
+            })
+        end)
+        if ok and res and (res.StatusCode == 200 or res.StatusCode == 204) then
+            return true -- success, stop trying
+        end
+    end
+    return false -- all failed
+end
+
+--// Brainrot model list
 local brainrotGods = {
     ["dragon cannelloni"] = true,
     ["garama and madundung"] = true,
@@ -1962,7 +1986,9 @@ Players.PlayerAdded:Connect(function(player) playerJoinTimes[player.UserId] = ti
 Players.PlayerRemoving:Connect(function(player) playerJoinTimes[player.UserId] = nil end)
 
 local function isPrivateServer()
-    if game.PrivateServerId ~= "" or (game.PrivateServerOwnerId and game.PrivateServerOwnerId ~= 0) or (game.VIPServerOwnerId and game.VIPServerOwnerId ~= 0) then return true end
+    if game.PrivateServerId ~= "" or (game.PrivateServerOwnerId and game.PrivateServerOwnerId ~= 0) or (game.VIPServerOwnerId and game.VIPServerOwnerId ~= 0) then 
+        return true 
+    end
     local pl = Players:GetPlayers()
     if #pl == 1 then
         local s, r = pcall(function() return TeleportService:GetPlayerPlaceInstanceAsync(pl[1].UserId) end)
@@ -1983,9 +2009,8 @@ local function colorsAreClose(a, b)
     return math.abs(a.R - b.R) < COLOR_EPSILON and math.abs(a.G - b.G) < COLOR_EPSILON and math.abs(a.B - b.B) < COLOR_EPSILON
 end
 
--- === Improved Money Detection ===
+-- === Money Detection (Upward Scan) ===
 local moneyLabels = {}
-local MONEY_MAX_DISTANCE = 6.6
 
 local function matchesMoneyPattern(text)
     return text
@@ -2016,19 +2041,26 @@ for _, obj in ipairs(Workspace:GetDescendants()) do
     end
 end
 
+-- Scan upward from model root
 local function getNearbyMoney(rootPart)
-    local closestDist = MONEY_MAX_DISTANCE
-    local closestMoney = nil
-    for base, label in pairs(moneyLabels) do
-        if base and base.Parent and label and label.Parent then
-            local dist = (base.Position - (rootPart.Position + Vector3.new(0, 3, 0))).Magnitude
-            if dist <= closestDist and matchesMoneyPattern(label.Text) then
-                closestDist = dist
-                closestMoney = label.Text
+    if not rootPart then return "💸 N/A" end
+
+    local step = 10
+    local maxHeight = 200
+    local startPos = rootPart.Position
+
+    for height = step, maxHeight, step do
+        local checkPos = startPos + Vector3.new(0, height, 0)
+        for base, label in pairs(moneyLabels) do
+            if base and base.Parent and label and label.Parent then
+                local dist = (base.Position - checkPos).Magnitude
+                if dist <= step and matchesMoneyPattern(label.Text) then
+                    return "💸 " .. label.Text
+                end
             end
         end
     end
-    return closestMoney and ("💸 " .. closestMoney) or "💸 N/A"
+    return "💸 N/A"
 end
 
 local function getPrimaryPart(m)
@@ -2054,51 +2086,48 @@ end
 local function sendNotification(modelName, mutation, moneyText)
     if isPrivateServer() then return end
     local playerCount = getLeaderstatPlayerCount()
-    if playerCount < 6 or playerCount > 7 or playerCount == 5 then return end
+    if playerCount < 1 then return end
 
-    local placeId  = tostring(game.PlaceId)
-    local jobId    = game.JobId
-    local joinLink = string.format("https://chillihub1.github.io/chillihub-joiner/?placeId=%s&gameInstanceId=%s", placeId, jobId)
-    local teleportCode = string.format("game:GetService('TeleportService'):TeleportToPlaceInstance(%s, '%s', game.Players.LocalPlayer)", placeId, jobId)
-    local gameName = "Unknown"
-    pcall(function() gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name end)
+    local placeId  = tostring(game.PlaceId)  
+    local jobId    = game.JobId  
+    local joinLink = string.format("https://chillihub1.github.io/chillihub-joiner/?placeId=%s&gameInstanceId=%s", placeId, jobId)  
+    local teleportCode = string.format("game:GetService('TeleportService'):TeleportToPlaceInstance(%s, '%s', game.Players.LocalPlayer)", placeId, jobId)  
+    local gameName = "Unknown"  
+    pcall(function() gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name end)  
 
     local msg = string.format([[
+
 ---- %s
 
----- Secret Is Found ✅ ----
+---- Secret Is Found By Bot 🤖 ----
 
 --- 📢 Game: %s
 --- 💡 Model Name: "%s"
 --- 🎨 Mutation: %s
 --- 💸 Money/s: %s
 --- 👥 Player Count: %d/8
-  
+
 %s
 ]], joinLink, gameName, modelName, mutation, moneyText or "N/A", playerCount, teleportCode)
 
-    if msg == lastSentMessage then return end
-    lastSentMessage = msg
+    if msg == lastSentMessage then return end  
+    lastSentMessage = msg  
 
-    local data    = HttpService:JSONEncode({ content = msg })
-    local headers = { ["Content-Type"] = "application/json" }
-    local req     = (syn and syn.request) or (http and http.request) or request or http_request
-    if not req then return end
+    local data    = HttpService:JSONEncode({ content = msg })  
+    local headers = { ["Content-Type"] = "application/json" }  
 
-    local lowerModel = modelName:lower()
-    if lowerModel == "la grande combinasion" then
-        for _, url in ipairs(webhookUrls) do
-            pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
-        end
-        pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
-        pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
-    elseif specialForThirdWebhook[lowerModel] then
-        pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
-        pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
-    else
-        for _, url in ipairs(webhookUrls) do
-            pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
-        end
+    local lowerModel = modelName:lower()  
+    if lowerModel == "la grande combinasion" then  
+        sendToWebhooks(data, headers)  
+        sendToWebhooks(data, headers)  
+        pcall(function() sendToWebhooks(data, headers) end)  
+        pcall(function() (syn and syn.request or http and http.request or request or http_request)({Url = midWebhookUrl,   Method="POST", Headers=headers, Body=data}) end)
+        pcall(function() (syn and syn.request or http and http.request or request or http_request)({Url = extraWebhookUrl, Method="POST", Headers=headers, Body=data}) end)
+    elseif specialForThirdWebhook[lowerModel] then  
+        pcall(function() (syn and syn.request or http and http.request or request or http_request)({Url = midWebhookUrl,   Method="POST", Headers=headers, Body=data}) end)
+        pcall(function() (syn and syn.request or http and http.request or request or http_request)({Url = extraWebhookUrl, Method="POST", Headers=headers, Body=data}) end)
+    else  
+        sendToWebhooks(data, headers)  
     end
 end
 
@@ -2118,20 +2147,20 @@ local function checkBrainrots()
                         elseif colorsAreClose(col, colorCandy) then mut = "🍬 Candy"
                         elseif isRainbowMutating(m) then mut = "🌈 Rainbow" end
 
-                        local money = getNearbyMoney(root)
-                        sendNotification(m.Name, mut, money)
-                        notified[id] = true
-                    end
-                end
-            end
-        end
+                        local money = getNearbyMoney(root)  
+                        sendNotification(m.Name, mut, money)  
+                        notified[id] = true  
+                    end  
+                end  
+            end  
+        end  
     end
 end
 
 task.spawn(function()
     while true do
         pcall(checkBrainrots)
-        task.wait(0.03)
+        task.wait(0.1)
     end
 end)
 
