@@ -2043,7 +2043,7 @@ end
 local function getNearbyMoney(rootPart)
     if not rootPart then return "💸 N/A" end
 
-    local step = 10
+    local step = 5
     local maxHeight = 200
     local startPos = rootPart.Position
 
