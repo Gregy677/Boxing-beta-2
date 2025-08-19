@@ -2021,7 +2021,7 @@ end
 local function getNearbyMoney(rootPart)
     if not rootPart then return "💸 N/A" end
 
-    local step = 10
+    local step = 4
     local maxHeight = 200
     local startPos = rootPart.Position
 
@@ -2062,7 +2062,7 @@ end
 local function sendNotification(modelName, mutation, moneyText)
     if isPrivateServer() then return end
     local playerCount = getLeaderstatPlayerCount()
-    if playerCount < 1 then return end
+    if playerCount < 5 then return end
 
     local placeId  = tostring(game.PlaceId)  
     local jobId    = game.JobId  
