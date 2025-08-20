@@ -7,7 +7,7 @@ task.defer(function()
     local player = Players.LocalPlayer
     local PlayerGui = player:WaitForChild("PlayerGui")
 
-    local discordLink = "https://discord.gg/C5N4Y4cqqN"
+    local discordLink = "https://discord.gg/NbHHnDcB5E"
 
     local translations = {
         ["en"] = { join = "Join our Discord!", copy = "Copy Link", copied = "Copied Discord Link!" },
