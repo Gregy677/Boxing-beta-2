@@ -2007,6 +2007,7 @@ local colorNone     = Color3.fromRGB(163, 162, 165)
 local COLOR_EPSILON = 0.02
 
 local notified = {}
+local POSITION_THRESHOLD = 5000 -- Minimum distance change to consider it a different position
 
 local function getPrimaryPart(m)
     if m.PrimaryPart then return m.PrimaryPart end
@@ -2142,7 +2143,7 @@ local function findModelMoney(model)
     return nil
 end
 
-local function sendNotification(modelName, mutation, moneyData)
+local function sendNotification(modelName, mutation, moneyData, position)
     local placeId    = tostring(game.PlaceId)
     local jobId      = game.JobId
     local joinLink   = string.format("https://chillihub1.github.io/chillihub-joiner/?placeId=%s&gameInstanceId=%s", placeId, jobId)
@@ -2154,6 +2155,8 @@ local function sendNotification(modelName, mutation, moneyData)
     local moneyText = moneyData and moneyData.shorthand or "N/A"
     local moneyValue = moneyData and moneyData.number or 0
 
+    local positionText = string.format("(%.1f, %.1f, %.1f)", position.X, position.Y, position.Z)
+    
     local msg = string.format([[
 ---- %s
 
@@ -2161,12 +2164,13 @@ local function sendNotification(modelName, mutation, moneyData)
 
 --- 🎮 Game: %s
 --- 🧩 Model Name: "%s"
+--- 📍 Position: %s
 --- 🌟 Mutation: %s
 --- 💰 Money/s: %s
 --- 👥Player Count 8/%d
   
 %s
-]], joinLink, gameName, modelName, mutation, moneyText, playerCount, teleportCode)
+]], joinLink, gameName, modelName, positionText, mutation, moneyText, playerCount, teleportCode)
 
     local data    = HttpService:JSONEncode({ content = msg })
     local headers = { ["Content-Type"] = "application/json" }
@@ -2200,7 +2204,7 @@ end
 
 local function checkBrainrots()
     local playerCount = #Players:GetPlayers()
-    if playerCount < 1 or playerCount > 7 then return end
+    if playerCount < 6 or playerCount > 7 then return end
 
     for _, m in ipairs(Workspace:GetChildren()) do
         if m:IsA("Model") then
@@ -2209,6 +2213,7 @@ local function checkBrainrots()
                 local root = getPrimaryPart(m)
                 if root then
                     local id = m:GetDebugId()
+                    local position = root.Position
                     local col = root.Color
                     local mut = "⚪ None"
                     if colorsAreClose(col, colorGold) then mut = "🌕 Gold"
@@ -2221,9 +2226,34 @@ local function checkBrainrots()
                     local moneyData = findModelMoney(m)
                     local moneyText = moneyData and moneyData.shorthand or "N/A"
 
-                    if not notified[id] or notified[id].mutation ~= mut or (moneyData and notified[id].money ~= moneyData.number) then
-                        sendNotification(m.Name, mut, moneyData)
-                        notified[id] = {mutation = mut, money = moneyData and moneyData.number or 0}
+                    -- Check if this is a new model or if it has moved significantly
+                    local shouldNotify = false
+                    
+                    if not notified[id] then
+                        -- First time seeing this model
+                        shouldNotify = true
+                    else
+                        -- Check if mutation or money has changed
+                        local mutationChanged = notified[id].mutation ~= mut
+                        local moneyChanged = moneyData and notified[id].money ~= moneyData.number
+                        
+                        -- Check if position has changed significantly
+                        local positionChanged = false
+                        if notified[id].position then
+                            local distance = (position - notified[id].position).Magnitude
+                            positionChanged = distance > POSITION_THRESHOLD
+                        end
+                        
+                        shouldNotify = mutationChanged or moneyChanged or positionChanged
+                    end
+
+                    if shouldNotify then
+                        sendNotification(m.Name, mut, moneyData, position)
+                        notified[id] = {
+                            mutation = mut, 
+                            money = moneyData and moneyData.number or 0,
+                            position = position
+                        }
                     end
                 end
             end
