@@ -1984,6 +1984,7 @@ local brainrotGods = {
     ["karkerkar kurkur"] = true,
     ["la vacca saturno saturnita"] = true,
     ["los orcalitos"] = true,
+    ["los tungtungtungcitos"] = true,
 }
 
 local specialForThirdWebhook = {
