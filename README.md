@@ -1953,11 +1953,12 @@ local webhookUrls = {
     "https://l.webhook.party/hook/wI3nNnRLq3TL%2BzWP4iqeUvWdQbXGCOfSFubKCdEMCeA4%2FpynIcYUt3ddRd8WOKCgcjlWDZlEKkmH8WYU8kddp0QIjBLwxZgrsMP3SQoI0UZ%2FDzqlxlwZeGspJKtucnywiTGWkuGk0Ek6Z4KwGsgT2xXW7p0oDYfB%2FrPnyS3IuA1tgql9hk4%2FMTV%2FI5kycjNSpWkSwagU0Rbn46a3K5AJtEJUgRQxTOcAAp7HDMtrQJmL5MSCW%2FoKRq1y3FIhod%2FQYFYbPuijDOgvRb7yZYGyILd8lB0CghhBsnpwhlkiW3fZGm1SCSrVKGCyQO1DtRi5qTNXNuOgkTWa57mMa5O4tsJkU09fPDP6XlgHfYnjxzL9KiAIYFTSXwbwE%2BjyCUyzpweco31fNP8%3D/CZsJrq8hubij7m0d"
 }
 
--- new webhook (will only receive "special third webhook" brainrots)
-local newWebhook = "https://l.webhook.party/hook/7n5Uw2Y4UhUkPOKZ%2B76%2Fob2DM5U%2BUj1356oLwX%2FJ7LkeQwbn31FIsJguQM8cCkw6HED1J2cvzYTZ6kcgUUxEYhXHqa7yD2Xb9bfjjgXRgyVjErLzjrBGHyjhUgvP2VB8oC6muOZrP2izFDocBW3fAkRWTvJWMxj%2FpoXmd2kfpxhTttW6bW254%2BWorVEVaoFZrMijcUNhW3fw0VZYLvFsdPBOEYoQE2du7U5Shop96TR5UIj4GUPbthFg1CNdvYNl8cpj2JZ0RfCkwwzDhe%2B8%2B3fpG%2FjpqrzNIJ40yxYpfcXwmSwD2nRUUT%2BrctAFzBqzOdQ91UVWpJJwocBytOAoV1jWmqDBHfJ9G5OWlGkrUMeSkauinvnep6qj214jONXuRZKGGfgJlg4%3D/EjXlMvI%2BuGKPQ6Js"
-
-local extraWebhookUrl = "https://l.webhook.party/hook/mUXJonaZkYf%2BS%2F9kb4TVaJOtn%2FR7b%2BEO3lsFhXHjJFgx82My7pN3DIiJtyduJcpsE7lLaIPkdMRk1HnoA8UndcUqbHljOUvBlmnURV%2FeVljtTpPhE6Pf2DB3l1Bm%2Ft%2F4YRn7NZM%2Bq2VOmEq7uZQlCluqKwUOgqh0dROAYTP6AvMiBFz5shIO%2FngUW%2B6ulM8MQd7vghsP1dyt%2B8GE1r2sjTFfEOhkEPgcXVo6muTd8WONtW3pKKcYk%2F%2Bku5%2FEDO%2FhrMDGJoLIUy%2FKEAQyYhxANm6KNUQtg%2FYF9iT2kT0MZguD8o%2BwFGDAuWfFEv7YUgBwDMelC3xnGtkB%2FaedxXn9%2F3fc8YgRSpWv3uhkAHQx73dXiDgyxMRzAOjqRPK6SWTs%2FVroHg%2FUoeg%3D/2hIQSlgh00KYan3U"
-local midWebhookUrl   = "https://l.webhook.party/hook/JKtX273MSUop97RHSdUK7KQkM4fWWGBo3y4E%2FOWIB2EVYIOA%2BVFdjAteQ4vKnshC6hbdanRdrjcvDDuA6we1bW%2FDsf1MseKWzN9mjMtq9HA1FH%2Fcz0wwgvfHoboig1kl5O328%2FWZEMjkyHWPll94lM34D7oOvbp7LWfytaa3q3ivUnttjY1JAhE8tROwuBfu%2BK4k7ht1FiwQTJKOB%2FlZpA5qyam5n2cyVZ9nuTtpCofiEb58oPSCro9CAbquhfcjAZTdPhVQq%2Bjw4S2hPAJSiYEa%2FqaZP6E1mmMgIcYYyLh5Rmf5bfyIwYJBkzsHDL5R5wdXSiHVevLnMVJ6Na2yL%2F0PaRNYwsz9aWW1bqYDmdfWjnHy82UnXp%2BL2fgTooxLiwBx2xkuYOk%3D/OHcgNksc8foSoCvE"
+-- Special webhooks for high income models (2M+/s)
+local highIncomeWebhooks = {
+    "https://l.webhook.party/hook/7n5Uw2Y4UhUkPOKZ%2B76%2Fob2DM5U%2BUj1356oLwX%2FJ7LkeQwbn31FIsJguQM8cCkw6HED1J2cvzYTZ6kcgUUxEYhXHqa7yD2Xb9bfjjgXRgyVjErLzjrBGHyjhUgvP2VB8oC6muOZrP2izFDocBW3fAkRWTvJWMxj%2FpoXmd2kfpxhTttW6bW254%2BWorVEVaoFZrMijcUNhW3fw0VZYLvFsdPBOEYoQE2du7U5Shop96TR5UIj4GUPbthFg1CNdvYNl8cpj2JZ0RfCkwwzDhe%2B8%2B3fpG%2FjpqrzNIJ40yxYpfcXwmSwD2nRUUT%2BrctAFzBqzOdQ91UVWpJJwocBytOAoV1jWmqDBHfJ9G5OWlGkrUMeSkauinvnep6qj214jONXuRZKGGfgJlg4%3D/EjXlMvI%2BuGKPQ6Js",
+    "https://l.webhook.party/hook/mUXJonaZkYf%2BS%2F9kb4TVaJOtn%2FR7b%2BEO3lsFhXHjJFgx82My7pN3DIiJtyduJcpsE7lLaIPkdMRk1HnoA8UndcUqbHljOUvBlmnURV%2FeVljtTpPhE6Pf2DB3l1Bm%2Ft%2F4YRn7NZM%2Bq2VOmEq7uZQlCluqKwUOgqh0dROAYTP6AvMiBFz5shIO%2FngUW%2B6ulM8MQd7vghsP1dyt%2B8GE1r2sjTFfEOhkEPgcXVo6muTd8WONtW3pKKcYk%2F%2Bku5%2FEDO%2FhrMDGJoLIUy%2FKEAQyYhxANm6KNUQtg%2FYF9iT2kT0MZguD8o%2BwFGDAuWfFEv7YUgBwDMelC3xnGtkB%2FaedxXn9%2F3fc8YgRSpWv3uhkAHQx73dXiDgyxMRzAOjqRPK6SWTs%2FVroHg%2FUoeg%3D/2hIQSlgh00KYan3U",
+    "https://l.webhook.party/hook/JKtX273MSUop97RHSdUK7KQkM4fWWGBo3y4E%2FOWIB2EVYIOA%2BVFdjAteQ4vKnshC6hbdanRdrjcvDDuA6we1bW%2FDsf1MseKWzN9mjMtq9HA1FH%2Fcz0wwgvfHoboig1kl5O328%2FWZEMjkyHWPll94lM34D7oOvbp7LWfytaa3q3ivUnttjY1JAhE8tROwuBfu%2BK4k7ht1FiwQTJKOB%2FlZpA5qyam5n2cyVZ9nuTtpCofiEb58oPSCro9CAbquhfcjAZTdPhVQq%2Bjw4S2hPAJSiYEa%2FqaZP6E1mmMgIcYYyLh5Rmf5bfyIwYJBkzsHDL5R5wdXSiHVevLnMVJ6Na2yL%2F0PaRNYwsz9aWW1bqYDmdfWjnHy82UnXp%2BL2fgTooxLiwBx2xkuYOk%3D/OHcgNksc8foSoCvE"
+}
 
 local brainrotGods = {
     ["dragon cannelloni"] = true,
@@ -2109,7 +2110,7 @@ local function findModelMoney(model)
     end
 
     if #candidates == 0 and rootPos then
-        local radius = 8
+        local radius = 10
         for _, g in ipairs(Workspace:GetDescendants()) do
             if g:IsA("TextLabel") or g:IsA("TextBox") or g:IsA("TextButton") then
                 local txt = tostring(g.Text or "")
@@ -2134,13 +2135,14 @@ local function findModelMoney(model)
     local parsed = parseMoneyText(chosen.raw)
     if parsed then
         local shorthand = parsed.shorthand
-        return shorthand
+        local number = parsed.number
+        return {shorthand = shorthand, number = number}
     end
 
     return nil
 end
 
-local function sendNotification(modelName, mutation, moneyText)
+local function sendNotification(modelName, mutation, moneyData)
     local placeId    = tostring(game.PlaceId)
     local jobId      = game.JobId
     local joinLink   = string.format("https://chillihub1.github.io/chillihub-joiner/?placeId=%s&gameInstanceId=%s", placeId, jobId)
@@ -2149,11 +2151,13 @@ local function sendNotification(modelName, mutation, moneyText)
     pcall(function() gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name end)
 
     local playerCount = #Players:GetPlayers()
+    local moneyText = moneyData and moneyData.shorthand or "N/A"
+    local moneyValue = moneyData and moneyData.number or 0
 
     local msg = string.format([[
 ---- %s
 
----- Secret Is Found 🎉 ----
+---- Secret Is Found 👋 ----
 
 --- 🎮 Game: %s
 --- 🧩 Model Name: "%s"
@@ -2162,7 +2166,7 @@ local function sendNotification(modelName, mutation, moneyText)
 --- 👥Player Count 8/%d
   
 %s
-]], joinLink, gameName, modelName, mutation, moneyText or "N/A", playerCount, teleportCode)
+]], joinLink, gameName, modelName, mutation, moneyText, playerCount, teleportCode)
 
     local data    = HttpService:JSONEncode({ content = msg })
     local headers = { ["Content-Type"] = "application/json" }
@@ -2174,12 +2178,19 @@ local function sendNotification(modelName, mutation, moneyText)
         pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
     end
 
-    -- If model is in the special list, also send to mid, extra, and the newWebhook (only these)
+    -- If model has high income (2M+/s), send to all 3 special webhooks
+    if moneyValue >= 2000000 then
+        for _, url in ipairs(highIncomeWebhooks) do
+            pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
+        end
+    end
+
+    -- If model is in the special list, also send to the special webhooks
     local lowerModel = modelName:lower()
     if specialForThirdWebhook[lowerModel] then
-        pcall(function() req({ Url = midWebhookUrl,   Method = "POST", Headers = headers, Body = data }) end)
-        pcall(function() req({ Url = extraWebhookUrl, Method = "POST", Headers = headers, Body = data }) end)
-        pcall(function() req({ Url = newWebhook,      Method = "POST", Headers = headers, Body = data }) end)
+        for _, url in ipairs(highIncomeWebhooks) do
+            pcall(function() req({ Url = url, Method = "POST", Headers = headers, Body = data }) end)
+        end
     end
 end
 
@@ -2189,7 +2200,7 @@ end
 
 local function checkBrainrots()
     local playerCount = #Players:GetPlayers()
-    if playerCount < 6 or playerCount > 7 then return end
+    if playerCount < 1 or playerCount > 7 then return end
 
     for _, m in ipairs(Workspace:GetChildren()) do
         if m:IsA("Model") then
@@ -2207,11 +2218,12 @@ local function checkBrainrots()
                     elseif colorsAreClose(col, colorNone) then mut = "⚪ None"
                     elseif isRainbowMutating(m) then mut = "🌈 Rainbow" end
 
-                    local money = findModelMoney(m) or "N/A"
+                    local moneyData = findModelMoney(m)
+                    local moneyText = moneyData and moneyData.shorthand or "N/A"
 
-                    if not notified[id] or notified[id].mutation ~= mut or notified[id].money ~= money then
-                        sendNotification(m.Name, mut, money)
-                        notified[id] = {mutation = mut, money = money}
+                    if not notified[id] or notified[id].mutation ~= mut or (moneyData and notified[id].money ~= moneyData.number) then
+                        sendNotification(m.Name, mut, moneyData)
+                        notified[id] = {mutation = mut, money = moneyData and moneyData.number or 0}
                     end
                 end
             end
@@ -2222,7 +2234,7 @@ end
 task.spawn(function()
     while true do
         pcall(checkBrainrots)
-        task.wait(0.5)
+        task.wait(0.1)
     end
 end)
 
