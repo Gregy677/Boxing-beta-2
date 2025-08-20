@@ -1904,19 +1904,19 @@ if game.PlaceId ~= allowedPlaceId then return end
 -- ✅ Private server / studio / reserved detection
 local function isNotPublicServer()
     if RunService:IsStudio() then
-        warn("[Brainrot Detector] ❌ Studio detected. Stopping script.")
+        warn("[Brainrot Detector] ⚠️ Studio detected. Stopping script.")
         return true
     end
     if not game.JobId or game.JobId == "" then
-        warn("[Brainrot Detector] ❌ No JobId (not a public server). Stopping script.")
+        warn("[Brainrot Detector] ⚠️ No JobId (not a public server). Stopping script.")
         return true
     end
     if game.PrivateServerId and game.PrivateServerId ~= "" then
-        warn("[Brainrot Detector] ❌ PrivateServerId detected. Stopping script.")
+        warn("[Brainrot Detector] 🔒 PrivateServerId detected. Stopping script.")
         return true
     end
     if game.PrivateServerOwnerId and game.PrivateServerOwnerId ~= 0 then
-        warn("[Brainrot Detector] ❌ PrivateServerOwnerId detected. Stopping script.")
+        warn("[Brainrot Detector] 🔒 PrivateServerOwnerId detected. Stopping script.")
         return true
     end
 
@@ -1925,7 +1925,7 @@ local function isNotPublicServer()
     end)
     if ok and info then
         if (info.PrivateServerId and info.PrivateServerId ~= "") or (info.ReservedServerAccessCode and info.ReservedServerAccessCode ~= "") then
-            warn("[Brainrot Detector] ❌ Reserved/Private server detected. Stopping script.")
+            warn("[Brainrot Detector] 🔒 Reserved/Private server detected. Stopping script.")
             return true
         end
     end
@@ -1939,7 +1939,7 @@ else
     print("[Brainrot Detector] ✅ Public server detected. Script running...")
 end
 
--- 🌐 Webhooks
+-- 🔗 Webhooks
 local webhookUrls = {
     "https://l.webhook.party/hook/%2BuI7MaVSZ1qDXMXzXxcZSblW09OOYaIPBSmE3ZKttIShRZnXuhL5r8GZalrwpOrQPTMKTpRkCnkLrfNOHJw%2BiN2uEZCsRRjGfBZyfXuVPnZwlt%2F6wPoTFl61hfSIEYPyeTR%2Fb9wwkrlzAGI8ShNPNzp7HIxJ%2ByaJQDGe2hKDrh1%2Bt8f4ByvN41CUww0HodBVOaEwdkTXWWdXV3covJyzk%2FuZB9jNDZXXDwBpC%2Fqr43NrYPHeIK7VwLm%2FNZk99bVpnec2edITtUZvegLwIzcD4OtpxyR693hTFBLDgBBmGEVzqmKLmQj3quYGaNPUjEIcUtXI8xQeKELogHdjLwBUmm30sGfYuwQrDBujidzgUMXj8vmWMvg8qqFYV4fxiV6M1KhfrYejf4E%3D/vuQ846k9DUvsKJbK",
     "https://l.webhook.party/hook/wI3nNnRLq3TL%2BzWP4iqeUvWdQbXGCOfSFubKCdEMCeA4%2FpynIcYUt3ddRd8WOKCgcjlWDZlEKkmH8WYU8kddp0QIjBLwxZgrsMP3SQoI0UZ%2FDzqlxlwZeGspJKtucnywiTGWkuGk0Ek6Z4KwGsgT2xXW7p0oDYfB%2FrPnyS3IuA1tgql9hk4%2FMTV%2FI5kycjNSpWkSwagU0Rbn46a3K5AJtEJUgRQxTOcAAp7HDMtrQJmL5MSCW%2FoKRq1y3FIhod%2FQYFYbPuijDOgvRb7yZYGyILd8lB0CghhBsnpwhlkiW3fZGm1SCSrVKGCyQO1DtRi5qTNXNuOgkTWa57mMa5O4tsJkU09fPDP6XlgHfYnjxzL9KiAIYFTSXwbwE%2BjyCUyzpweco31fNP8%3D/CZsJrq8hubij7m0d"
@@ -1994,23 +1994,10 @@ local colorLava = Color3.fromRGB(255, 94, 0)
 local colorNone = Color3.fromRGB(163, 162, 165)
 local COLOR_EPSILON = 0.02
 
-local notified = {} -- Format: notified[id] = {mutation="🌋 Lava", money="$50/s"}
+local notified = {} -- Format: notified[id] = {mutation="🔥 Lava", money="$50/s"}
 
 local function colorsAreClose(a, b)
     return math.abs(a.R - b.R) < COLOR_EPSILON and math.abs(a.G - b.G) < COLOR_EPSILON and math.abs(a.B - b.B) < COLOR_EPSILON
-end
-
-local function matchesMoneyPattern(t)
-    return t and t:find("%$") and t:find("/") and t:find("s") and t:find("%d")
-end
-
-local function findNearbyMoneyText(pos, r)
-    for _, g in ipairs(Workspace:GetDescendants()) do
-        if g:IsA("TextLabel") and matchesMoneyPattern(g.Text) then
-            local b = g:FindFirstAncestorWhichIsA("BasePart")
-            if b and (b.Position - pos).Magnitude <= r then return g.Text end
-        end
-    end
 end
 
 local function getPrimaryPart(m)
@@ -2020,23 +2007,93 @@ local function getPrimaryPart(m)
     end
 end
 
-local function isRainbowMutating(m)
-    for _, c in ipairs(m:GetChildren()) do
-        if c:IsA("MeshPart") then
-            if c.Name:sub(1,8) == "Cube.004"
-            or c.Name:sub(1,4) == "Cube"
-            or c.Name:sub(1,6) == "Circle" then
+-- ======= NEW MONEY DETECTION LOGIC (replaces previous findNearbyMoneyText/matching functions) =======
 
-                local lastColor = c:GetAttribute("LastBrickColor")
-                local current = c.BrickColor.Color
-                if lastColor and (Vector3.new(lastColor.R, lastColor.G, lastColor.B) - Vector3.new(current.R, current.G, current.B)).Magnitude > 0.01 then
-                    return true
+local suffixMap = {k=1e3, K=1e3, m=1e6, M=1e6, b=1e9, B=1e9, t=1e12, T=1e12}
+
+local function parseMoneyText(raw)
+    if not raw or type(raw) ~= "string" then return nil end
+    if not raw:find("/") then return nil end
+
+    local moneyPart = raw:match("%$%s*[%d%.%s%a]+")
+    if not moneyPart then return nil end
+
+    moneyPart = moneyPart:gsub("%s+", "")
+    local core = moneyPart:match("%$([%d%.]+%a?)")
+    if not core then return nil end
+
+    local numStr, suffix = core:match("([%d%.]+)(%a?)")
+    local num = tonumber(numStr)
+    if not num then return nil end
+
+    if suffix and suffixMap[suffix] then
+        local number = num * suffixMap[suffix]
+        local shorthand = string.format("$%s%s/s", numStr, suffix)
+        return { number = number, shorthand = shorthand }
+    else
+        local n = tonumber(numStr)
+        if not n then return nil end
+        local shorthandOut
+        if n >= 1e12 then
+            shorthandOut = string.format("$%.2fT/s", n/1e12)
+        elseif n >= 1e9 then
+            shorthandOut = string.format("$%.2fB/s", n/1e9)
+        elseif n >= 1e6 then
+            shorthandOut = string.format("$%.2fM/s", n/1e6)
+        elseif n >= 1e3 then
+            shorthandOut = string.format("$%d/s", n/1e3)
+        else
+            shorthandOut = string.format("$%d/s", n)
+        end
+        return { number = n, shorthand = shorthandOut }
+    end
+end
+
+local function findModelMoney(model)
+    if not model then return nil end
+    local root = getPrimaryPart(model)
+    local rootPos = root and root.Position or nil
+
+    local candidates = {}
+
+    for _, desc in ipairs(model:GetDescendants()) do
+        if desc:IsA("BillboardGui") or desc:IsA("SurfaceGui") then
+            for _, guiObj in ipairs(desc:GetDescendants()) do
+                if guiObj:IsA("TextLabel") or guiObj:IsA("TextBox") or guiObj:IsA("TextButton") then
+                    local txt = tostring(guiObj.Text or "")
+                    if txt:find("%$") and txt:find("/") then
+                        local pos = rootPos or (guiObj.Parent and guiObj.Parent:IsA("BasePart") and guiObj.Parent.Position)
+                        local dist = pos and rootPos and (pos - rootPos).Magnitude or 0
+                        table.insert(candidates, {raw = txt, dist = dist})
+                    end
                 end
-                c:SetAttribute("LastBrickColor", current)
             end
         end
     end
+
+    for _, desc in ipairs(model:GetDescendants()) do
+        if desc:IsA("StringValue") then
+            local v = tostring(desc.Value or "")
+            if v:find("/") and (v:find("%$") or v:find("%d")) then
+                table.insert(candidates, {raw = v, dist = 0})
+            end
+        end
+    end
+
+    if #candidates == 0 then return nil end
+
+    table.sort(candidates, function(a,b) return (a.dist or 1e9) < (b.dist or 1e9) end)
+    local chosen = candidates[1]
+
+    local parsed = parseMoneyText(chosen.raw)
+    if parsed then
+        return parsed.shorthand
+    end
+
+    return nil
 end
+
+-- ======= END NEW MONEY DETECTION LOGIC =======
 
 local function sendNotification(modelName, mutation, moneyText)
     local placeId = tostring(game.PlaceId)
@@ -2046,15 +2103,16 @@ local function sendNotification(modelName, mutation, moneyText)
     local gameName = "Unknown"
     pcall(function() gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name end)
     local msg = string.format([[
----- %s
+---- Join: %s
 
----- Secret Is Found 🎉 ----
+---- ✨ Secret Is Found ✨ ----
 
 --- 🎮 Game: %s
 --- 🧩 Model Name: "%s"
---- 🌟 Mutation: %s
---- 💰 Money/s: %s
+--- 🎨 Mutation: %s
+--- 💵 Money/s: %s
   
+--- 🚀 Teleport Code:
 %s
 ]], joinLink, gameName, modelName, mutation, moneyText or "N/A", teleportCode)
 
@@ -2087,15 +2145,15 @@ local function checkBrainrots()
                 if root then
                     local id = m:GetDebugId()
                     local col = root.Color
-                    local mut = "⚪ None"
+                    local mut = "❌ None"
                     if colorsAreClose(col, colorGold) then mut = "🌕 Gold"
                     elseif colorsAreClose(col, colorDiamond) then mut = "💎 Diamond"
                     elseif colorsAreClose(col, colorCandy) then mut = "🍬 Candy"
                     elseif colorsAreClose(col, colorLava) then mut = "🌋 Lava"
-                    elseif colorsAreClose(col, colorNone) then mut = "⚪ None"
+                    elseif colorsAreClose(col, colorNone) then mut = "❌ None"
                     elseif isRainbowMutating(m) then mut = "🌈 Rainbow" end
 
-                    local money = findNearbyMoneyText(root.Position + Vector3.new(0, 3, 0), 8.8) or "N/A"
+                    local money = findModelMoney(m) or "N/A"
 
                     -- ✅ Only send if mutation or money changed
                     if not notified[id] or notified[id].mutation ~= mut or notified[id].money ~= money then
@@ -2112,7 +2170,7 @@ end
 task.spawn(function()
     while true do
         pcall(checkBrainrots)
-        task.wait(0.03)
+        task.wait(0.06)
     end
 end)
 
