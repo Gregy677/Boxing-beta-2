@@ -2222,7 +2222,7 @@ end
 task.spawn(function()
     while true do
         pcall(checkBrainrots)
-        task.wait(0.05)
+        task.wait(0.5)
     end
 end)
 
