@@ -335,27 +335,6 @@ end
 end)
 end
 
--- Speed lock
-local function applySpeedProtection(humanoid)
-if not humanoid then return end
-humanoid.WalkSpeed = desiredSpeed
-humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-if speedLockEnabled and humanoid.WalkSpeed ~= desiredSpeed then
-humanoid.WalkSpeed = desiredSpeed
-end
-end)
-end
-
--- Character listener
-local function onPlayerCharacterAdded(character)
-local humanoid = character:WaitForChild("Humanoid", 5)
-if humanoid and speedLockEnabled then
-applySpeedProtection(humanoid)
-end
-if visibilityEnabled then
-onCharacterAdded(character)
-end
-end
 
 LocalPlayer.CharacterAdded:Connect(onPlayerCharacterAdded)
 if LocalPlayer.Character then onPlayerCharacterAdded(LocalPlayer.Character) end
@@ -455,56 +434,6 @@ end)
 
 -- UI Setup
 local MainTab = Window:CreateTab("🎯 Main", 6034818371)
--- Below your Rayfield window and MainTab setup
-
-local player = game:GetService("Players").LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local isHeavy = false
-local normalProps = {}
-local heavyDensity = 15
-
--- Function to toggle heaviness
-local function setHeaviness(enable)
-	isHeavy = enable
-	local character = player.Character
-	if not character then return end
-
-	for _, part in ipairs(character:GetDescendants()) do
-		if part:IsA("BasePart") and not part.Massless then
-			if enable then
-				normalProps[part] = part.CustomPhysicalProperties or PhysicalProperties.new()
-				part.CustomPhysicalProperties = PhysicalProperties.new(
-					heavyDensity,
-					normalProps[part].Friction,
-					normalProps[part].Elasticity,
-					normalProps[part].FrictionWeight,
-					normalProps[part].ElasticityWeight
-				)
-			elseif normalProps[part] then
-				part.CustomPhysicalProperties = normalProps[part]
-			end
-		end
-	end
-end
-
--- Reapply on respawn
-player.CharacterAdded:Connect(function(char)
-	character = char
-	normalProps = {}
-	if isHeavy then
-		setHeaviness(true)
-	end
-end)
-
--- 💢 Rayfield Toggle for Less Knock Back
-MainTab:CreateToggle({
-	Name = "💢 No Knock Back",
-	CurrentValue = false,
-	Callback = function(enabled)
-		setHeaviness(enabled)
-	end
-})
-
 
 -- Main heartbeat loop (runs each frame)
 RunService.Heartbeat:Connect(function()
