@@ -17,7 +17,7 @@ pcall(function()
 end)
 
 -- If key already saved → run Chilli.lua & skip GUI
-if isfile(FILE_NAME) and readfile(FILE_NAME) == KEY then
+if isfile(FILE_NAME) and readfile(FILE_NAME):lower() == KEY:lower() then
     loadstring(chilliScript)()
     return
 end
@@ -101,9 +101,9 @@ enterBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 enterBtn.Text = "Enter"
 Instance.new("UICorner", enterBtn).CornerRadius = UDim.new(0, 12)
 
--- Button logic
+-- Button logic (case-insensitive comparison)
 enterBtn.MouseButton1Click:Connect(function()
-    if textbox.Text == KEY then
+    if textbox.Text:lower() == KEY:lower() then
         writefile(FILE_NAME, KEY)
         frame:Destroy()
         loadstring(chilliScript)()
