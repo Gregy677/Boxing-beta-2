@@ -1,4 +1,4 @@
- loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))() end)
+ loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
 
 local HttpService        = game:GetService("HttpService")
 local Workspace          = game:GetService("Workspace")
