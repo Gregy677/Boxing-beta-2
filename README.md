@@ -2010,6 +2010,7 @@ local COLOR_EPSILON = 0.02
 
 local notified = {}
 local POSITION_THRESHOLD = 5 -- Minimum distance change to consider it a different position
+local MONEY_VALIDATION_THRESHOLD = 1 -- Minimum valid money value ($1/s)
 
 local function getPrimaryPart(m)
     if m.PrimaryPart then return m.PrimaryPart end
@@ -2145,6 +2146,10 @@ local function findModelMoney(model)
     return nil
 end
 
+local function isValidMoneyData(moneyData)
+    return moneyData and moneyData.number and moneyData.number >= MONEY_VALIDATION_THRESHOLD
+end
+
 local function sendNotification(modelName, mutation, moneyData, position)
     local placeId    = tostring(game.PlaceId)
     local jobId      = game.JobId
@@ -2226,14 +2231,19 @@ local function checkBrainrots()
                     elseif isRainbowMutating(m) then mut = "🌈 Rainbow" end
 
                     local moneyData = findModelMoney(m)
-                    local moneyText = moneyData and moneyData.shorthand or "N/A"
-
+                    
                     -- Check if this is a new model or if it has moved significantly
                     local shouldNotify = false
                     
                     if not notified[id] then
                         -- First time seeing this model
-                        shouldNotify = true
+                        notified[id] = {
+                            mutation = mut, 
+                            money = moneyData and moneyData.number or 0,
+                            position = position,
+                            notified = false,
+                            lastCheck = os.time()
+                        }
                     else
                         -- Check if mutation or money has changed
                         local mutationChanged = notified[id].mutation ~= mut
@@ -2247,16 +2257,48 @@ local function checkBrainrots()
                         end
                         
                         shouldNotify = mutationChanged or moneyChanged or positionChanged
+                        
+                        -- Update the stored data
+                        notified[id].mutation = mut
+                        notified[id].money = moneyData and moneyData.number or 0
+                        notified[id].position = position
+                        notified[id].lastCheck = os.time()
                     end
 
-                    if shouldNotify then
+                    -- Send notification if we have valid money data and either:
+                    -- 1. This is the first valid detection, or
+                    -- 2. Something has changed significantly
+                    if isValidMoneyData(moneyData) and (shouldNotify or not notified[id].notified) then
                         sendNotification(m.Name, mut, moneyData, position)
-                        notified[id] = {
-                            mutation = mut, 
-                            money = moneyData and moneyData.number or 0,
-                            position = position
-                        }
+                        notified[id].notified = true
+                        notified[id].money = moneyData.number
                     end
+                end
+            end
+        end
+    end
+    
+    -- Check for models that need re-checking (previously had invalid money data)
+    local currentTime = os.time()
+    for id, data in pairs(notified) do
+        -- Re-check models every 30 seconds if they haven't been properly notified yet
+        if not data.notified and currentTime - data.lastCheck > 1 then
+            -- Find the model by its debug ID
+            for _, m in ipairs(Workspace:GetChildren()) do
+                if m:IsA("Model") and m:GetDebugId() == id then
+                    local moneyData = findModelMoney(m)
+                    if isValidMoneyData(moneyData) then
+                        local root = getPrimaryPart(m)
+                        if root then
+                            sendNotification(m.Name, data.mutation, moneyData, root.Position)
+                            data.notified = true
+                            data.money = moneyData.number
+                            data.lastCheck = currentTime
+                        end
+                    else
+                        data.lastCheck = currentTime -- Update check time but don't notify
+                    end
+                    break
                 end
             end
         end
