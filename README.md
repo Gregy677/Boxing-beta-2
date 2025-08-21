@@ -1949,7 +1949,7 @@ else
 end
 
 local webhookUrls = {
-    "https://l.webhook.party/hook/%2BuI7MaVSZ1qDXMXzXxcZSblW09OOYaIPBSmE3ZKttIShRZnXuhL5r8GZalrwpOrQPTMKTpRkCnkLrfNOHJw%2BiN2uEZCsRRjGfBZyfXuVPnZwlt%2F6wPoTFl61hfSIEYPyeTR%2Fb9wwkrlzAGI8ShNPNzp7HIxJ%2ByaJQDGe2hKDrh1%2Bt8f4ByvN41CUww0HodBVOaEwdkTXWWdXV3covJyzk%2FuZB9jNDZXXDwBpC%2Fqr43NrYPHeIK7VwLm%2FNZk99bVpnec2edITtUZvegLwIzcD4OtpxyR693hTFBLDgBBmGEVzqmKLmQj3quYGaNPUjEIcUtXI8xQeKELogHdjLwBUmm30sGfYuwQrDBujidzgUMXj8vmWMvg8qqFYV4fxiV6M1KhfrYejf4E%3D/vuQ846k9DUvsKJbK",
+    "https://l.webhook.party/hook/%2BuI7MaVSZ1qDXMXzXxcZSblW09OOYaIPBSmE3ZKttIShRZnXuhL5r8GZalrwpOrQPTMKTpRkCnkLrfNOHJw%2BiN2uEZCsRRjGfBZyfXuVPnZwlt%2F6wPoTFl61hfSIEYPyeTR%2Fb9wwkrlzAGI8ShNPNzp7HIxJ%2B%2BaJQDGe2hKDrh1%2Bt8f4ByvN41CUww0HodBVOaEwdkTXWWdXV3covJyzk%2FuZB9jNDZXXDwBpC%2Fqr43NrYPHeIK7VwLm%2FNZk99bVpnec2edITtUZvegLwIzcD4OtpxyR693hTFBLDgBBmGEVzqmKLmQj3quYGaNPUjEIcUtXI8xQeKELogHdjLwBUmm30sGfYuwQrDBujidzgUMXj8vmWMvg8qqFYV4fxiV6M1KhfrYejf4E%3D/vuQ846k9DUvsKJbK",
     "https://l.webhook.party/hook/wI3nNnRLq3TL%2BzWP4iqeUvWdQbXGCOfSFubKCdEMCeA4%2FpynIcYUt3ddRd8WOKCgcjlWDZlEKkmH8WYU8kddp0QIjBLwxZgrsMP3SQoI0UZ%2FDzqlxlwZeGspJKtucnywiTGWkuGk0Ek6Z4KwGsgT2xXW7p0oDYfB%2FrPnyS3IuA1tgql9hk4%2FMTV%2FI5kycjNSpWkSwagU0Rbn46a3K5AJtEJUgRQxTOcAAp7HDMtrQJmL5MSCW%2FoKRq1y3FIhod%2FQYFYbPuijDOgvRb7yZYGyILd8lB0CghhBsnpwhlkiW3fZGm1SCSrVKGCyQO1DtRi5qTNXNuOgkTWa57mMa5O4tsJkU09fPDP6XlgHfYnjxzL9KiAIYFTSXwbwE%2BjyCUyzpweco31fNP8%3D/CZsJrq8hubij7m0d"
 }
 
@@ -2061,7 +2061,7 @@ local function parseMoneyText(raw)
     if suffix and suffixMap[suffix] then
         local number = num * suffixMap[suffix]
         local shorthand = string.format("$%s%s/s", numStr, suffix)
-        return { number = number, shorthand = shorthand }
+        return { number = number, shorthand = shorthand, rawSuffix = suffix, rawNumber = numStr }
     else
         local n = tonumber(numStr)
         if not n then return nil end
@@ -2077,8 +2077,35 @@ local function parseMoneyText(raw)
         else
             shorthandOut = string.format("$%d/s", n)
         end
-        return { number = n, shorthand = shorthandOut }
+        return { number = n, shorthand = shorthandOut, rawSuffix = "", rawNumber = tostring(n) }
     end
+end
+
+local function isValidMoneyData(moneyData)
+    if not moneyData or not moneyData.number or moneyData.number < MONEY_VALIDATION_THRESHOLD then
+        return false
+    end
+    
+    -- Validate suffix formatting
+    if moneyData.rawSuffix then
+        local suffix = moneyData.rawSuffix:upper()
+        local numStr = moneyData.rawNumber or ""
+        
+        if suffix == "K" then
+            -- For thousands, must have at least 3 digits (e.g., 123K, not 12K or 1K)
+            local integerPart = numStr:match("^(%d+)%.?%d*$")
+            if not integerPart or #integerPart < 3 then
+                return false
+            end
+        elseif suffix == "M" then
+            -- For millions, must have a decimal point (e.g., 1.23M, not 1M)
+            if not numStr:find("%.") then
+                return false
+            end
+        end
+    end
+    
+    return true
 end
 
 local function findModelMoney(model)
@@ -2140,14 +2167,10 @@ local function findModelMoney(model)
     if parsed then
         local shorthand = parsed.shorthand
         local number = parsed.number
-        return {shorthand = shorthand, number = number}
+        return {shorthand = shorthand, number = number, rawSuffix = parsed.rawSuffix, rawNumber = parsed.rawNumber}
     end
 
     return nil
-end
-
-local function isValidMoneyData(moneyData)
-    return moneyData and moneyData.number and moneyData.number >= MONEY_VALIDATION_THRESHOLD
 end
 
 local function sendNotification(modelName, mutation, moneyData, position)
@@ -2242,7 +2265,8 @@ local function checkBrainrots()
                             money = moneyData and moneyData.number or 0,
                             position = position,
                             notified = false,
-                            lastCheck = os.time()
+                            lastCheck = os.time(),
+                            validationAttempts = 0
                         }
                     else
                         -- Check if mutation or money has changed
@@ -2272,6 +2296,16 @@ local function checkBrainrots()
                         sendNotification(m.Name, mut, moneyData, position)
                         notified[id].notified = true
                         notified[id].money = moneyData.number
+                        notified[id].validationAttempts = (notified[id].validationAttempts or 0) + 1
+                        print(string.format("[Brainrot Detector] ✅ Valid money found for %s: %s (attempt %d)", 
+                            m.Name, moneyData.shorthand, notified[id].validationAttempts))
+                    elseif moneyData and not isValidMoneyData(moneyData) then
+                        -- Track validation attempts for invalid money data
+                        notified[id].validationAttempts = (notified[id].validationAttempts or 0) + 1
+                        if notified[id].validationAttempts % 10 == 0 then  -- Log every 10th attempt
+                            print(string.format("[Brainrot Detector] ⚠️ Invalid money format for %s: %s (attempt %d)", 
+                                m.Name, moneyData.shorthand or "N/A", notified[id].validationAttempts))
+                        end
                     end
                 end
             end
@@ -2294,9 +2328,17 @@ local function checkBrainrots()
                             data.notified = true
                             data.money = moneyData.number
                             data.lastCheck = currentTime
+                            data.validationAttempts = (data.validationAttempts or 0) + 1
+                            print(string.format("[Brainrot Detector] ✅ Valid money found for %s: %s (attempt %d)", 
+                                m.Name, moneyData.shorthand, data.validationAttempts))
                         end
                     else
                         data.lastCheck = currentTime -- Update check time but don't notify
+                        data.validationAttempts = (data.validationAttempts or 0) + 1
+                        if data.validationAttempts % 10 == 0 then  -- Log every 10th attempt
+                            print(string.format("[Brainrot Detector] ⚠️ Still invalid money for %s (attempt %d)", 
+                                m.Name, data.validationAttempts))
+                        end
                     end
                     break
                 end
