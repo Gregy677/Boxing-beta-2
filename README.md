@@ -1,1 +1,3 @@
 loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Gregy677/Stepfive/main/README.md", true))()
