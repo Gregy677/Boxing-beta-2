@@ -1,7 +1,4 @@
---// Load external loadstring first
-loadstring(game:HttpGet("https://pastebin.com/raw/mQEV2Qnr", true))()
-
---// Services
+--// GUI
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
